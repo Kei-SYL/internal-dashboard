@@ -405,7 +405,7 @@ function renderAll() {
         <td><span class="badge ${x.major?'bm':'bn'}">${x.type}</span></td>
         <td>${x.detail}</td>
         <td style="color:#666">${x.action}</td>
-        <td>${x.img?`<img src="${x.img}" style="max-width:200px;max-height:150px;border-radius:4px;display:block;cursor:pointer" onclick="openImg('${x.img}')">`:''}</td>
+        <td>${x.img?`<a href="${x.img}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#0057b8;text-decoration:none;border:1px solid #0057b8;border-radius:4px;padding:3px 8px;white-space:nowrap">📷 写真を開く</a>`:''}</td>
         <td style="white-space:nowrap">
           <button onclick="openAccidentEdit(${i})" style="padding:2px 8px;background:#555;color:#fff;border:none;border-radius:3px;font-size:10px;cursor:pointer;margin-bottom:3px;display:block">編集</button>
           <button onclick="deleteAccidentDirect(${i})" style="padding:2px 8px;background:#8b2020;color:#fff;border:none;border-radius:3px;font-size:10px;cursor:pointer;display:block">削除</button>
@@ -541,7 +541,6 @@ function buildForm(d) {
 }
 
 function aeH(a, i) {
-  const imgPreview = a.img ? `<img src="${a.img}" style="max-width:100%;max-height:200px;border-radius:4px;margin-top:6px;display:block">` : '';
   return `<div class="ae" id="ae${i}">
     <button class="aerm" onclick="rmAe(${i})">✕</button>
     <div class="g2f"><div class="fr"><label>日付</label><input class="ad" value="${a.date||''}"></div><div class="fr"><label>便番号</label><input class="ar" value="${a.route||''}"></div></div>
@@ -552,34 +551,14 @@ function aeH(a, i) {
     </div>
     <div class="fr"><label>事故詳細</label><textarea class="adet" rows="2">${a.detail||''}</textarea></div>
     <div class="fr"><label>対応</label><textarea class="aact" rows="2">${a.action||''}</textarea></div>
-    <div class="fr"><label>現場写真（任意）</label>
-      <input type="file" accept="image/*" onchange="loadImg(this,${i})" style="font-size:11px">
-      <div id="imgpv${i}">${imgPreview}</div>
-      ${a.img ? `<button onclick="clearImg(${i})" style="font-size:10px;color:#888;background:none;border:none;cursor:pointer;margin-top:2px">✕ 画像を削除</button>` : ''}
+    <div class="fr"><label>現場写真URL（SharePoint等・任意）</label>
+      <input type="url" class="aimg" placeholder="https://sharepoint.com/..." value="${a.img||''}" style="font-size:12px;width:100%;box-sizing:border-box">
+      <span style="font-size:10px;color:#999;margin-top:2px;display:block">SharePointにアップした写真のリンクを貼り付けてください</span>
     </div>
   </div>`;
 }
 
-function loadImg(input, i) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    document.getElementById('imgpv'+i).innerHTML = `<img src="${e.target.result}" style="max-width:100%;max-height:200px;border-radius:4px;margin-top:6px;display:block">`;
-    input.dataset.b64 = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
 
-function clearImg(i) {
-  document.getElementById('imgpv'+i).innerHTML = '';
-  const ae = document.getElementById('ae'+i);
-  const inp = ae.querySelector('input[type=file]');
-  if (inp) { inp.value=''; delete inp.dataset.b64; }
-  // 再描画
-  const btn = ae.querySelector('button[onclick^="clearImg"]');
-  if (btn) btn.remove();
-}
 function addAe() { const c=document.getElementById('aes'),i=c.querySelectorAll('.ae').length,d=document.createElement('div');d.innerHTML=aeH({date:'',route:'',customer:'',type:'誤配達',detail:'',action:'',major:false},i);c.appendChild(d.firstElementChild); }
 function rmAe(i) { document.getElementById('ae'+i)?.remove(); document.querySelectorAll('.ae').forEach((e,j)=>{e.id='ae'+j;e.querySelector('.aerm').setAttribute('onclick','rmAe('+j+')');}); }
 
@@ -602,9 +581,8 @@ function saveData() {
   d.comments.s3 = document.getElementById('fs3').value;
   d.quality.accidents = [];
   document.querySelectorAll('.ae').forEach(e => {
-    const imgInput = e.querySelector('input[type=file]');
-    const imgData = imgInput && imgInput.dataset.b64 ? imgInput.dataset.b64 : (e.querySelector('#imgpv'+Array.from(document.querySelectorAll('.ae')).indexOf(e)+' img')?.src || '');
-    d.quality.accidents.push({date:e.querySelector('.ad').value,route:e.querySelector('.ar').value,customer:e.querySelector('.ac').value,type:e.querySelector('.at').value,detail:e.querySelector('.adet').value,action:e.querySelector('.aact').value,major:e.querySelector('.am').value==='1',img:imgInput?.dataset.b64||''});
+    const imgUrl = e.querySelector('input.aimg')?.value || '';
+    d.quality.accidents.push({date:e.querySelector('.ad').value,route:e.querySelector('.ar').value,customer:e.querySelector('.ac').value,type:e.querySelector('.at').value,detail:e.querySelector('.adet').value,action:e.querySelector('.aact').value,major:e.querySelector('.am').value==='1',img:imgUrl});
   });
   closeEp(); kill(); renderAll();
   const t=document.getElementById('toast');t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2000);
@@ -907,9 +885,7 @@ function openAccidentEdit(idx) {
   document.getElementById('ac_major').value    = a.major ? '1' : '0';
   document.getElementById('ac_detail').value   = a.detail || '';
   document.getElementById('ac_action').value   = a.action || '';
-  document.getElementById('ac_imgpv').innerHTML = a.img ? `<img src="${a.img}" style="max-width:100%;max-height:150px;border-radius:4px">` : '';
-  document.getElementById('ac_imgfile').value = '';
-  document.getElementById('ac_imgfile')._b64 = a.img || '';
+  document.getElementById('ac_imgurl').value = a.img || '';
   document.getElementById('accOv').style.display = 'block';
   document.getElementById('accModal').style.display = 'block';
 }
@@ -917,17 +893,7 @@ function closeAccidentEdit() {
   document.getElementById('accOv').style.display = 'none';
   document.getElementById('accModal').style.display = 'none';
 }
-function accLoadImg(input) {
-  const file = input.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    input._b64 = e.target.result;
-    document.getElementById('ac_imgpv').innerHTML = `<img src="${e.target.result}" style="max-width:100%;max-height:150px;border-radius:4px">`;
-  };
-  reader.readAsDataURL(file);
-}
 function saveAccidentEdit() {
-  const imgInput = document.getElementById('ac_imgfile');
   const acc = {
     date:     document.getElementById('ac_date').value.trim(),
     route:    document.getElementById('ac_route').value.trim(),
@@ -936,7 +902,7 @@ function saveAccidentEdit() {
     major:    document.getElementById('ac_major').value === '1',
     detail:   document.getElementById('ac_detail').value.trim(),
     action:   document.getElementById('ac_action').value.trim(),
-    img:      imgInput._b64 || ''
+    img:      document.getElementById('ac_imgurl').value.trim()
   };
   const accidents = DB[cur].quality.accidents;
   if (_accIdx >= 0) { accidents[_accIdx] = acc; } else { accidents.push(acc); }
@@ -993,9 +959,9 @@ renderAll();
     </div>
     <div style="margin-bottom:8px"><label style="display:block;font-size:10px;font-weight:600;color:#888;margin-bottom:3px">事故詳細</label><textarea id="ac_detail" rows="3" style="width:100%;padding:6px 8px;border:1px solid #e0e0da;border-radius:4px;font-size:12px;resize:vertical;font-family:inherit"></textarea></div>
     <div style="margin-bottom:8px"><label style="display:block;font-size:10px;font-weight:600;color:#888;margin-bottom:3px">対応</label><textarea id="ac_action" rows="2" style="width:100%;padding:6px 8px;border:1px solid #e0e0da;border-radius:4px;font-size:12px;resize:vertical;font-family:inherit"></textarea></div>
-    <div style="margin-bottom:16px"><label style="display:block;font-size:10px;font-weight:600;color:#888;margin-bottom:3px">現場写真（任意）</label>
-      <input type="file" id="ac_imgfile" accept="image/*" onchange="accLoadImg(this)" style="font-size:11px">
-      <div id="ac_imgpv" style="margin-top:6px"></div>
+    <div style="margin-bottom:16px"><label style="display:block;font-size:10px;font-weight:600;color:#888;margin-bottom:3px">現場写真URL（SharePoint等・任意）</label>
+      <input type="url" id="ac_imgurl" placeholder="https://sharepoint.com/..." style="width:100%;padding:6px 8px;border:1px solid #e0e0da;border-radius:4px;font-size:12px;box-sizing:border-box">
+      <span style="font-size:10px;color:#999;margin-top:2px;display:block">SharePointにアップした写真のリンクを貼り付けてください</span>
     </div>
     <div style="display:flex;gap:8px">
       <button onclick="closeAccidentEdit()" style="flex:0 0 auto;padding:9px 16px;background:none;border:1px solid #e0e0da;border-radius:4px;font-size:12px;cursor:pointer">キャンセル</button>
@@ -1004,12 +970,5 @@ renderAll();
   </div>
 </div>
 
-<div id="imgModal" onclick="closeImg()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out">
-  <img id="imgModalSrc" style="max-width:90vw;max-height:90vh;border-radius:6px;box-shadow:0 8px 40px rgba(0,0,0,.6)">
-</div>
-<script>
-function openImg(src){const m=document.getElementById('imgModal');m.style.display='flex';document.getElementById('imgModalSrc').src=src;}
-function closeImg(){document.getElementById('imgModal').style.display='none';}
-</script>
 </body>
 </html>
