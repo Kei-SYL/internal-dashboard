@@ -111,6 +111,7 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#555;border-left:1px solid #333}
   <span style="font-size:10px;color:#888;margin-left:8px">表示月：</span>
   <select id="msel" onchange="switchMonth(this.value)"></select>
   <button onclick="addMonth()">＋ 月を追加</button>
+  <button onclick="deleteMonth()" style="background:#6b2020">🗑 この月を削除</button>
   <input type="file" id="xlsxIn" accept=".xlsx,.xls" style="display:none" onchange="handleExcelUpload(this)">
   <button onclick="document.getElementById('xlsxIn').click()" style="background:#2a6496">📊 Excelで更新</button>
   <button onclick="downloadTemplate()" style="background:#555">📋 テンプレート</button>
@@ -532,6 +533,18 @@ function saveData() {
   });
   closeEp(); kill(); renderAll();
   const t=document.getElementById('toast');t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2000);
+}
+
+function deleteMonth() {
+  const keys = Object.keys(DB).sort();
+  if (keys.length <= 1) { alert('最後の月は削除できません'); return; }
+  if (!confirm(`${DB[cur].label} を削除しますか？`)) return;
+  delete DB[cur];
+  cur = Object.keys(DB).sort().slice(-1)[0];
+  initSelect(); kill(); renderAll();
+  const t = document.getElementById('toast');
+  t.textContent = '削除しました';
+  t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 2000);
 }
 
 function addMonth() {
