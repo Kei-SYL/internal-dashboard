@@ -7,7 +7,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Noto Sans JP','Hiragino Kaku Gothic ProN',sans-serif;background:#f5f7fa;display:flex;flex-direction:column;align-items:center;padding:12px 0 40px;min-height:100vh}
+body{font-family:'Noto Sans JP','Hiragino Kaku Gothic ProN',sans-serif;background:#f5f7fa;display:flex;flex-direction:column;align-items:center;padding:0 0 40px;min-height:100vh}
+.topbar{width:100%;background:#1e1e1c;display:flex;flex-direction:column;align-items:center;padding:12px 0 0;margin-bottom:0}
 /* タブバー */
 nav{width:1280px;background:#1e1e1c;border-radius:6px 6px 0 0;display:flex;align-items:stretch}
 nav button{flex:1;padding:12px 8px;font-size:11px;font-weight:700;color:#666;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;transition:color .15s}
@@ -99,6 +100,7 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#555;border-left:1px solid #333}
 </head>
 <body>
 
+<div class="topbar">
 <nav id="nav">
   <button class="on" onclick="goS(0)">1. 物量推移</button>
   <button onclick="goS(1)">2. 便別重量</button>
@@ -116,6 +118,7 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#555;border-left:1px solid #333}
   <button onclick="document.getElementById('xlsxIn').click()" style="background:#2a6496">📊 Excelで更新</button>
   <button onclick="downloadTemplate()" style="background:#555">📋 テンプレート</button>
   <button onclick="exportHtml()" style="background:#444;margin-left:auto">📥 HTMLに保存</button>
+</div>
 </div>
 
 <!-- Slide 0: 物量推移 -->
