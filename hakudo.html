@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>白銅 定例ダッシュボード</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans JP','Hiragino Kaku Gothic ProN',sans-serif;background:#999;display:flex;flex-direction:column;align-items:center;padding:12px 0 40px;min-height:100vh}
+/* タブバー */
+nav{width:1280px;background:#1e1e1c;border-radius:6px 6px 0 0;display:flex;align-items:stretch}
+nav button{flex:1;padding:12px 8px;font-size:11px;font-weight:700;color:#666;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;transition:color .15s}
+nav button:hover{color:#ccc}
+nav button.on{color:#8fc31f;border-bottom-color:#8fc31f}
+nav .madd{flex:0 0 44px;font-size:16px;color:#555;border-left:1px solid #333}
+/* スライド */
+.slide{width:1280px;height:720px;background:#f5f5f2;display:none;flex-direction:column;box-shadow:0 6px 32px rgba(0,0,0,.35)}
+.slide.on{display:flex}
+/* ヘッダー帯 */
+.shdr{height:44px;background:#1e1e1c;display:flex;align-items:center;padding:0 24px;flex-shrink:0}
+.shdr .logo{font-size:13px;font-weight:700;color:#fff;letter-spacing:.06em;margin-right:16px}
+.shdr .logo em{color:#8fc31f;font-style:normal}
+.shdr .ttl{font-size:13px;font-weight:700;color:#ddd}
+.shdr .pn{margin-left:auto;font-size:11px;color:#666}
+/* ボディ */
+.sbody{flex:1;display:flex;min-height:0;padding:16px 20px;gap:16px}
+/* グラフエリア（左） */
+.main{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
+/* コメントエリア（右） */
+.side{width:260px;flex-shrink:0;display:flex;flex-direction:column;gap:10px}
+/* カード */
+.card{background:#fff;border:1px solid #e0e0da;border-radius:6px;padding:12px 16px;display:flex;flex-direction:column}
+/* KPIバー */
+.krow{display:grid;gap:8px;flex-shrink:0}
+.kcard{background:#fff;border:1px solid #e0e0da;border-radius:6px;padding:10px 14px}
+.klbl{font-size:9px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+.kval{font-size:22px;font-weight:700;color:#1a1a18;line-height:1.1}
+.kunit{font-size:11px;font-weight:400}
+.kdelta{font-size:10px;margin-top:3px}
+.up{color:#2d6a2d}.dn{color:#8b2020}.neu{color:#888}
+/* チャートタイトル */
+.ctitle{font-size:12px;font-weight:700;color:#1a1a18;margin-bottom:6px}
+.leg{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.leg span{display:flex;align-items:center;gap:4px;font-size:10px;color:#888}
+.sw{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+/* キャンバスラッパー */
+.cvs{flex:1;position:relative;min-height:0}
+.cvs canvas{position:absolute;inset:0}
+/* コメントボックス */
+.cmt-box{background:#fff;border:1px solid #e0e0da;border-left:4px solid #8fc31f;border-radius:0 6px 6px 0;padding:14px 16px;font-size:16px;line-height:2.1;white-space:pre-line;color:#1a1a18;flex:1}
+.cmt-kpi{background:#fff;border:1px solid #e0e0da;border-radius:6px;padding:12px 16px}
+.cmt-kpi .kitem{margin-bottom:10px}
+.cmt-kpi .kyear{font-size:10px;color:#888;margin-bottom:2px}
+.cmt-kpi .knum{font-size:26px;font-weight:700;color:#1a1a18;line-height:1}
+.cmt-kpi .knum.cur{color:#8fc31f}
+/* 事故テーブル */
+.atbl{width:100%;border-collapse:collapse;font-size:14px}
+.atbl th{padding:7px 8px;border-bottom:1px solid #e0e0da;font-size:12px;font-weight:700;color:#888;text-align:left;white-space:nowrap}
+.atbl td{padding:8px 10px;border-bottom:1px solid #e0e0da;vertical-align:top;line-height:1.6}
+.atbl tr:last-child td{border-bottom:none}
+.badge{display:inline-block;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700}
+.bm{background:#f0e0e0;color:#6b1a1a}.bn{background:#ebebeb;color:#444}
+/* 月追加 */
+.month-sel{display:flex;align-items:center;gap:8px;padding:6px 16px;background:#2a2a28;border-top:1px solid #333}
+.month-sel select{background:#333;color:#aaa;border:1px solid #444;padding:4px 8px;font-size:11px;border-radius:3px}
+.month-sel button{padding:4px 12px;background:#8fc31f;color:#fff;border:none;border-radius:3px;font-size:11px;cursor:pointer}
+/* 編集パネル */
+.efab{position:fixed;bottom:22px;right:22px;background:#555;color:#fff;border:none;border-radius:50%;width:48px;height:48px;font-size:18px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.3);z-index:100;display:flex;align-items:center;justify-content:center}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200}
+.ov.on{display:block}
+.ep{position:fixed;top:0;right:0;width:600px;height:100vh;background:#fff;z-index:201;transform:translateX(100%);transition:transform .25s;overflow-y:auto;display:flex;flex-direction:column}
+.ep.on{transform:translateX(0)}
+.ephdr{padding:16px 20px;border-bottom:1px solid #e0e0da;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1}
+.ephdr h2{font-size:13px;font-weight:700}
+.epcl{background:none;border:none;font-size:20px;cursor:pointer;color:#888}
+.epbd{padding:16px 20px;flex:1}
+.epsec{margin-bottom:20px}
+.epst{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #e0e0da}
+.fr{margin-bottom:9px}
+.fr label{display:block;font-size:10px;font-weight:600;color:#888;margin-bottom:3px}
+.fr input,.fr textarea,.fr select{width:100%;padding:6px 8px;border:1px solid #e0e0da;border-radius:4px;font-size:11px;font-family:inherit;background:#fafaf8;outline:none}
+.fr input:focus,.fr textarea:focus,.fr select:focus{border-color:#8fc31f}
+.fr textarea{resize:vertical;min-height:48px}
+.g2f{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.g3f{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
+.barow{width:100%;padding:6px;background:none;border:1px dashed #e0e0da;border-radius:4px;font-size:10px;color:#888;cursor:pointer;margin-top:5px}
+.barow:hover{border-color:#8fc31f;color:#8fc31f}
+.ae{border:1px solid #e0e0da;border-radius:4px;padding:10px;margin-bottom:7px;position:relative;background:#fafaf8}
+.aerm{position:absolute;top:6px;right:8px;background:none;border:none;color:#aaa;cursor:pointer;font-size:12px}
+.epft{padding:12px 20px;border-top:1px solid #e0e0da;display:flex;gap:7px;position:sticky;bottom:0;background:#fff}
+.bsv{flex:1;padding:9px;background:#8fc31f;color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer}
+.bex{padding:9px 14px;background:none;border:1px solid #e0e0da;border-radius:4px;font-size:11px;cursor:pointer}
+.toast{position:fixed;bottom:80px;right:22px;background:#1e1e1c;color:#fff;padding:7px 14px;border-radius:4px;font-size:11px;opacity:0;transition:opacity .3s;z-index:300}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <button class="on" onclick="goS(0)">1. 物量推移</button>
+  <button onclick="goS(1)">2. 便別重量</button>
+  <button onclick="goS(2)">3. Kg単価</button>
+  <button onclick="goS(3)">4. 貨物事故</button>
+  <button onclick="goS(4)">5. 事故詳細</button>
+</nav>
+<div class="month-sel">
+  <span style="font-size:10px;color:#888">表示月：</span>
+  <select id="msel" onchange="switchMonth(this.value)"></select>
+  <button onclick="addMonth()">＋ 月を追加</button>
+  <button onclick="exportHtml()" style="background:#444;margin-left:auto">📥 HTMLに保存</button>
+</div>
+
+<!-- Slide 0: 物量推移 -->
+<div class="slide on" id="s0">
+  <div class="shdr"><div class="logo">SY<em>-</em>LINK</div><div class="ttl" id="ttl0"></div><div class="pn">1 / 5</div></div>
+  <div class="sbody">
+    <div class="main">
+      <div class="krow" style="grid-template-columns:repeat(4,1fr)" id="kpi0"></div>
+      <div class="card" style="flex:1">
+        <div class="ctitle">出荷重量【東京・神奈川】月間・日平均</div>
+        <div class="leg">
+          <span><span class="sw" style="background:#bbb;border-radius:0"></span>24年重量</span>
+          <span><span class="sw" style="background:#888;border-radius:0"></span>25年重量</span>
+          <span><span class="sw" style="background:#8fc31f;border-radius:0"></span>26年重量</span>
+          <span style="margin-left:6px"><svg width="16" height="2" style="vertical-align:middle;margin-right:3px"><line x1="0" y1="1" x2="16" y2="1" stroke="#bbb" stroke-width="2"/></svg>24年/日</span>
+          <span><svg width="16" height="2" style="vertical-align:middle;margin-right:3px"><line x1="0" y1="1" x2="16" y2="1" stroke="#888" stroke-width="2"/></svg>25年/日</span>
+          <span><svg width="16" height="2" style="vertical-align:middle;margin-right:3px"><line x1="0" y1="1" x2="16" y2="1" stroke="#8fc31f" stroke-width="2.5"/></svg>26年/日</span>
+        </div>
+        <div class="cvs"><canvas id="cT"></canvas></div>
+      </div>
+    </div>
+    <div class="side">
+      <div class="cmt-box" id="cmt0"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 1: 便別重量 -->
+<div class="slide" id="s1">
+  <div class="shdr"><div class="logo">SY<em>-</em>LINK</div><div class="ttl" id="ttl1"></div><div class="pn">2 / 5</div></div>
+  <div class="sbody">
+    <div class="main">
+      <div class="card" style="flex:1">
+        <div class="ctitle">便別重量（前年同月比）</div>
+        <div class="leg">
+          <span><span class="sw" style="background:#ddd;border:1px solid #ccc"></span>前年同月</span>
+          <span><span class="sw" style="background:#8fc31f"></span>今月</span>
+        </div>
+        <div class="cvs"><canvas id="cR"></canvas></div>
+      </div>
+    </div>
+    <div class="side">
+      <div class="cmt-box" id="cmt1"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 2: Kg単価 -->
+<div class="slide" id="s2">
+  <div class="shdr"><div class="logo">SY<em>-</em>LINK</div><div class="ttl" id="ttl2"></div><div class="pn">3 / 5</div></div>
+  <div class="sbody">
+    <div class="main">
+      <div class="card" style="flex:1">
+        <div class="ctitle">Kg単価推移（23〜26年）</div>
+        <div class="leg">
+          <span><span class="sw" style="background:#ddd"></span>23年</span>
+          <span><span class="sw" style="background:#bbb"></span>24年</span>
+          <span><span class="sw" style="background:#888"></span>25年</span>
+          <span><span class="sw" style="background:#8fc31f"></span>26年</span>
+        </div>
+        <div class="cvs"><canvas id="cK"></canvas></div>
+      </div>
+    </div>
+    <div class="side">
+      <div class="cmt-kpi" id="cmt2"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 3: 事故グラフ -->
+<div class="slide" id="s3">
+  <div class="shdr"><div class="logo">SY<em>-</em>LINK</div><div class="ttl" id="ttl3"></div><div class="pn">4 / 5</div></div>
+  <div class="sbody">
+    <div class="main">
+      <div class="card" style="flex:1">
+        <div class="ctitle">事故件数推移（2025年以降）</div>
+        <div class="leg">
+          <span><span class="sw" style="background:#888"></span>重大（紛失・破損）</span>
+          <span><span class="sw" style="background:#ccc"></span>その他</span>
+        </div>
+        <div class="cvs"><canvas id="cA"></canvas></div>
+      </div>
+    </div>
+    <div class="side">
+      <div class="cmt-box" id="cmt3"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 4: 事故詳細 -->
+<div class="slide" id="s4">
+  <div class="shdr"><div class="logo">SY<em>-</em>LINK</div><div class="ttl" id="ttl4"></div><div class="pn">5 / 5</div></div>
+  <div class="sbody" style="flex-direction:column">
+    <div class="krow" style="grid-template-columns:repeat(3,1fr);flex-shrink:0" id="kpi4"></div>
+    <div class="card" style="flex:1;margin-top:10px;overflow-y:auto">
+      <div class="ctitle" style="margin-bottom:10px">今月の事故詳細</div>
+      <table class="atbl" id="atbl4">
+        <thead><tr><th>日付</th><th>便</th><th>お客様</th><th>種別</th><th>事故詳細</th><th>対応</th><th>写真</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<button class="efab" onclick="openEp()">✏️</button>
+<div class="ov" id="ov" onclick="closeEp()"></div>
+<div class="ep" id="ep">
+  <div class="ephdr"><h2 id="epTtl">データ入力</h2><button class="epcl" onclick="closeEp()">✕</button></div>
+  <div class="epbd" id="epBd"></div>
+  <div class="epft">
+    <button class="bex" onclick="exportHtml()">📥 HTMLに保存</button>
+    <button class="bsv" onclick="saveData()">保存</button>
+  </div>
+</div>
+<div class="toast" id="toast">保存しました</div>
+
+<script>
+// ===== データ定義 =====
+let DB = {
+  "2026-01":{label:"2026年1月",volume:{totalKg:147642,perDay:7771,workDays:19,tokyoKg:51984,kanagawaKg:95658,prevTotalKg:164056,prevPerDay:8635,routes:{"801":{curr:30258,prev:30881},"02":{curr:35370,prev:40137},"23":{curr:11687,prev:11487},"35":{curr:23236,prev:26450},"41":{curr:10809,prev:10359},"42":{curr:10916,prev:21922},"45":{curr:25366,prev:22820},"675":{curr:11131,prev:12691},"677":{curr:21927,prev:28224}}},quality:{accidents:[]},comments:{s0:"",s1:"",s3:""}},
+  "2026-02":{label:"2026年2月",volume:{totalKg:152907,perDay:8495,workDays:18,tokyoKg:55976,kanagawaKg:96931,prevTotalKg:164739,prevPerDay:8670,routes:{"801":{curr:29488,prev:28799},"02":{curr:35265,prev:38391},"23":{curr:13439,prev:15175},"35":{curr:23619,prev:24903},"41":{curr:13364,prev:14941},"42":{curr:13124,prev:17387},"45":{curr:24608,prev:25143},"675":{curr:13861,prev:12601},"677":{curr:23182,prev:25658}}},quality:{accidents:[{date:"2/6",route:"801",customer:"大進精機(株)",type:"納品場所間違い",detail:"南六郷工場に納入予定を本社工場に誤って納入。",action:"お客様転送対応済み。配送一覧マーキング運用開始。",major:false}]},comments:{s0:"2025年比\n月あたり（線） 92.8%\n1日あたり（棒）98.0%\n\n去年より少ない\n一昨年より多い",s1:"2026年2月比\n\n増えた便\n801、675\n\n減った便\n02、23、35\n41、42、45、677",s3:"2026年2月発生分\n納品場所間違い・・・1件\n不在置き対応・・・0件"}},
+  "2026-03":{label:"2026年3月",volume:{totalKg:181612,perDay:8648,workDays:21,tokyoKg:68587,kanagawaKg:113025,prevTotalKg:180506,prevPerDay:9025,routes:{"801":{curr:31619,prev:29110},"02":{curr:41950,prev:43433},"23":{curr:15897,prev:16835},"35":{curr:23069,prev:28804},"41":{curr:17831,prev:13540},"42":{curr:19137,prev:22315},"45":{curr:32109,prev:26469},"675":{curr:10256,prev:14460},"677":{curr:24804,prev:22339}}},quality:{accidents:[{date:"3/6",route:"801",customer:"大進精機(株)",type:"納品場所間違い",detail:"南六郷工場に納入予定を本社工場に誤って納入。",action:"お客様転送対応済み。配送一覧マーキング運用開始。",major:false}]},comments:{s0:"2025年比\n月あたり（線）+0.6%\n1日あたり（棒）▲4.2%\n\n増えた便：801、675\n減った便：02、23、35\n　　　　　41、42、45、677",s1:"2026年3月比\n\n増えた便\n801、41、45\n\n減った便\n02、23、35\n42、675、677",s3:"2026年3月発生分\n納品場所間違い・・・1件\n不在置き対応・・・0件"}}
+};
+
+const TR = {
+  M:["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"],
+  y24:[134787,146796,148933,160179,156300,153383,162545,130279,152200,164143,152347,147302],
+  y25:[164056,164739,180506,162393,148999,150618,170886,124287,152150,165056,142273,146650],
+  d24:[7488,8155,7447,7628,7443,7669,7388,7663,8011,7461,7617,7365],
+  d25:[8635,8670,9025,7733,7450,7172,7768,7768,7607,7503,7904,7332],
+  kg23:[42.6,44.7,47.1,46.4,45.0,46.5,46.3,48.6,49.8,50.7,52.4,51.8],
+  kg24:[49.0,48.6,49.4,48.9,48.1,49.2,49.9,48.6,49.1,null,null,50.2],
+  kg25:[49.0,49.4,48.6,54.5,57.6,62.7,57.1,53.2,54.5,56.1,53.5,57.7],
+  kg26:[55.5,50.0,51.2,null,null,null,null,null,null,null,null,null],
+  aM:["25/1","25/2","25/3","25/4","25/5","25/6","25/7","25/8","25/9","25/10","25/11","25/12","26/1","26/2","26/3"],
+  aC:[0,2,3,4,1,1,0,0,0,1,3,0,1,0,0],
+  aO:[2,4,1,0,0,1,3,2,3,0,4,0,0,1,0]
+};
+
+let cur = "2026-03", sn = 0, CH = {};
+const fmt = n => n == null ? "—" : Math.round(n).toLocaleString();
+const pct = (a, b) => { if (!b) return {v:0,s:"—"}; const v=(a/b-1)*100; return {v, s:(v>=0?"+":"")+v.toFixed(1)+"%"}; };
+const K = v => v === 0 ? "0" : (v/1000).toFixed(0) + "千";
+const kill = () => { Object.values(CH).forEach(c => { try{c.destroy()}catch(e){} }); CH = {}; };
+
+function goS(n) {
+  document.querySelectorAll('.slide').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('nav button').forEach((b,i) => b.classList.toggle('on', i===n));
+  document.getElementById('s'+n).classList.add('on');
+  sn = n;
+}
+
+function switchMonth(m) {
+  cur = m;
+  kill();
+  renderAll();
+}
+
+function renderAll() {
+  const d = DB[cur];
+  if (!d) return;
+
+  // タイトル
+  const titles = [
+    "1. 物量把握（神奈川工場からの出荷分・神奈川・東京）",
+    "1. 物量把握（便ごと、神奈川・東京）",
+    "1. 物量把握：Kg単価把握（神奈川・東京・福島）",
+    "2. 貨物事故について",
+    "2. 貨物事故について"
+  ];
+  for (let i = 0; i < 5; i++) {
+    const el = document.getElementById('ttl'+i);
+    if (el) el.textContent = d.label + ' — ' + titles[i];
+  }
+
+  // コメント
+  document.getElementById('cmt0').textContent = d.comments.s0 || '';
+  document.getElementById('cmt1').textContent = d.comments.s1 || '';
+  document.getElementById('cmt3').textContent = d.comments.s3 || '';
+
+  // Kg単価コメント（数値カード）
+  document.getElementById('cmt2').innerHTML = `
+    <div class="kitem"><div class="kyear">24年2月</div><div class="knum">46.7<span style="font-size:13px">円</span></div></div>
+    <div class="kitem"><div class="kyear">25年2月</div><div class="knum">49.4<span style="font-size:13px">円</span></div></div>
+    <div class="kitem"><div class="kyear">26年2月</div><div class="knum cur">50.0<span style="font-size:13px">円</span></div></div>
+    <div class="kitem"><div class="kyear">26年3月</div><div class="knum cur">51.2<span style="font-size:13px">円</span></div></div>`;
+
+  // KPI Slide 0
+  const v = d.volume;
+  const tp = pct(v.totalKg, v.prevTotalKg);
+  const dp = pct(v.perDay, v.prevPerDay);
+  document.getElementById('kpi0').innerHTML = `
+    <div class="kcard"><div class="klbl">月間総重量（東神）</div><div class="kval">${fmt(v.totalKg)}<span class="kunit"> kg</span></div><div class="kdelta ${tp.v>=0?'up':'dn'}">${tp.s}（前年同月比）</div></div>
+    <div class="kcard"><div class="klbl">1日あたり重量</div><div class="kval">${fmt(v.perDay)}<span class="kunit"> kg/日</span></div><div class="kdelta ${dp.v>=0?'up':'dn'}">${dp.s}（稼働${v.workDays}日）</div></div>
+    <div class="kcard"><div class="klbl">東京便</div><div class="kval">${fmt(v.tokyoKg)}<span class="kunit"> kg</span></div><div class="kdelta neu">東神の${v.totalKg?Math.round(v.tokyoKg/v.totalKg*100):0}%</div></div>
+    <div class="kcard"><div class="klbl">神奈川便</div><div class="kval">${fmt(v.kanagawaKg)}<span class="kunit"> kg</span></div><div class="kdelta neu">東神の${v.totalKg?Math.round(v.kanagawaKg/v.totalKg*100):0}%</div></div>`;
+
+  // KPI Slide 4
+  const a = d.quality.accidents;
+  const maj = a.filter(x => x.major).length;
+  document.getElementById('kpi4').innerHTML = `
+    <div class="kcard"><div class="klbl">今月の事故件数</div><div class="kval">${a.length}<span class="kunit"> 件</span></div><div class="kdelta ${maj>0?'dn':'up'}">${maj>0?'重大 '+maj+'件':'重大事故なし'}</div></div>
+    <div class="kcard"><div class="klbl">重大事故（紛失・破損）</div><div class="kval">${maj}<span class="kunit"> 件</span></div><div class="kdelta neu">今月</div></div>
+    <div class="kcard"><div class="klbl">その他</div><div class="kval">${a.length-maj}<span class="kunit"> 件</span></div><div class="kdelta neu">今月</div></div>`;
+
+  // 事故テーブル
+  const tbody = document.querySelector('#atbl4 tbody');
+  tbody.innerHTML = a.length === 0
+    ? '<tr><td colspan="6" style="padding:16px;color:#888;font-style:italic">今月の事故はありません</td></tr>'
+    : a.map(x => `<tr>
+        <td style="white-space:nowrap">${x.date}</td>
+        <td style="white-space:nowrap">${x.route}便</td>
+        <td style="white-space:nowrap">${x.customer}</td>
+        <td><span class="badge ${x.major?'bm':'bn'}">${x.type}</span></td>
+        <td>${x.detail}</td>
+        <td style="color:#666">${x.action}</td>
+        <td>${x.img?`<img src="${x.img}" style="max-width:200px;max-height:150px;border-radius:4px;display:block;cursor:pointer" onclick="openImg('${x.img}')">`:''}</td>
+      </tr>`).join('');
+
+  // チャート描画
+  renderCharts(d);
+}
+
+function renderCharts(d) {
+  const v = d.volume;
+  const b26 = Array(12).fill(null), l26 = Array(12).fill(null);
+  Object.keys(DB).sort().forEach(k => {
+    const m = parseInt(k.split('-')[1]) - 1;
+    if (DB[k].volume.totalKg > 0) { b26[m] = DB[k].volume.totalKg; l26[m] = DB[k].volume.perDay; }
+  });
+
+  // Slide 0: 複合グラフ
+  CH.t = new Chart(document.getElementById('cT'), {
+    data: { labels: TR.M, datasets: [
+      {type:'bar', data:TR.y24, backgroundColor:'#bbb', yAxisID:'yR', order:4},
+      {type:'bar', data:TR.y25, backgroundColor:'#888', yAxisID:'yR', order:3},
+      {type:'bar', data:b26,   backgroundColor:'#8fc31f', yAxisID:'yR', order:2},
+      {type:'line',data:TR.d24,borderColor:'#bbb',backgroundColor:'transparent',borderWidth:1.5,pointRadius:2,yAxisID:'yL',order:7,spanGaps:false},
+      {type:'line',data:TR.d25,borderColor:'#888',backgroundColor:'transparent',borderWidth:1.5,pointRadius:2,yAxisID:'yL',order:6,spanGaps:false},
+      {type:'line',data:l26,  borderColor:'#8fc31f',backgroundColor:'transparent',borderWidth:2.5,pointRadius:3,yAxisID:'yL',order:0,spanGaps:false}
+    ]},
+    options: {responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,.05)'}},
+        yL:{type:'linear',position:'left', min:0,ticks:{font:{size:11},callback:K},grid:{color:'rgba(0,0,0,.05)'}},
+        yR:{type:'linear',position:'right',min:0,ticks:{font:{size:11},callback:K},grid:{drawOnChartArea:false}}
+      }}
+  });
+
+  // Slide 1: 便別
+  const R = Object.keys(v.routes);
+  CH.r = new Chart(document.getElementById('cR'), {type:'bar',
+    data:{labels:R.map(r=>r+'便'),datasets:[
+      {data:R.map(r=>v.routes[r].prev),backgroundColor:'#ddd'},
+      {data:R.map(r=>v.routes[r].curr),backgroundColor:'#8fc31f'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{font:{size:13}},grid:{display:false}},y:{min:0,ticks:{font:{size:12},callback:K},grid:{color:'rgba(0,0,0,.05)'}}}}
+  });
+
+  // Slide 2: Kg単価
+  CH.k = new Chart(document.getElementById('cK'), {type:'line',
+    data:{labels:TR.M,datasets:[
+      {data:TR.kg23,borderColor:'#ddd',backgroundColor:'transparent',borderWidth:1.5,pointRadius:2,spanGaps:true},
+      {data:TR.kg24,borderColor:'#bbb',backgroundColor:'transparent',borderWidth:1.5,pointRadius:2,spanGaps:true},
+      {data:TR.kg25,borderColor:'#888',backgroundColor:'transparent',borderWidth:2,  pointRadius:2,spanGaps:true},
+      {data:TR.kg26,borderColor:'#8fc31f',backgroundColor:'transparent',borderWidth:2.5,pointRadius:4,spanGaps:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{font:{size:12}},grid:{color:'rgba(0,0,0,.05)'}},y:{min:0,ticks:{font:{size:12},callback:v=>v===0?'0':v.toFixed(1)+'円'},grid:{color:'rgba(0,0,0,.05)'}}}}
+  });
+
+  // Slide 3: 事故グラフ
+  const a = d.quality.accidents;
+  const aC = [...TR.aC], aO = [...TR.aO];
+  const last = TR.aM.length - 1;
+  aC[last] = a.filter(x=>x.major).length;
+  aO[last] = a.filter(x=>!x.major).length;
+  CH.a = new Chart(document.getElementById('cA'), {type:'bar',
+    data:{labels:TR.aM,datasets:[
+      {data:aC,backgroundColor:'#888',stack:'s'},
+      {data:aO,backgroundColor:'#ccc',stack:'s'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{stacked:true,ticks:{font:{size:11}},grid:{display:false}},y:{stacked:true,min:0,max:9,ticks:{font:{size:11},stepSize:1},grid:{color:'rgba(0,0,0,.05)'}}}}
+  });
+}
+
+// ===== セレクタ初期化 =====
+function initSelect() {
+  const sel = document.getElementById('msel');
+  sel.innerHTML = '';
+  Object.keys(DB).sort().forEach(k => {
+    const o = document.createElement('option');
+    o.value = k; o.textContent = DB[k].label;
+    if (k === cur) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+
+// ===== 編集パネル =====
+function openEp() {
+  const d = DB[cur] || mkEmpty(cur);
+  document.getElementById('epTtl').textContent = 'データ入力 — ' + d.label;
+  buildForm(d);
+  document.getElementById('ov').classList.add('on');
+  document.getElementById('ep').classList.add('on');
+}
+function closeEp() {
+  document.getElementById('ov').classList.remove('on');
+  document.getElementById('ep').classList.remove('on');
+}
+
+function buildForm(d) {
+  const v = d.volume;
+  document.getElementById('epBd').innerHTML = `
+    <div class="epsec">
+      <div class="epst">物量データ</div>
+      <div class="g3f">
+        <div class="fr"><label>東神合計 (kg)</label><input id="ft" type="number" value="${v.totalKg||''}"></div>
+        <div class="fr"><label>1日あたり (kg)</label><input id="fd" type="number" value="${v.perDay||''}"></div>
+        <div class="fr"><label>稼働日数</label><input id="fw" type="number" value="${v.workDays||''}"></div>
+      </div>
+      <div class="g2f">
+        <div class="fr"><label>東京便 (kg)</label><input id="ftk" type="number" value="${v.tokyoKg||''}"></div>
+        <div class="fr"><label>神奈川便 (kg)</label><input id="fkk" type="number" value="${v.kanagawaKg||''}"></div>
+      </div>
+      <div class="g2f">
+        <div class="fr"><label>前年同月 総重量</label><input id="fpt" type="number" value="${v.prevTotalKg||''}"></div>
+        <div class="fr"><label>前年同月 1日あたり</label><input id="fpd" type="number" value="${v.prevPerDay||''}"></div>
+      </div>
+      <div class="epst" style="margin-top:12px">便別重量（今月 / 前年同月）</div>
+      ${Object.keys(v.routes).map(r=>`<div class="g2f"><div class="fr"><label>${r}便 今月</label><input id="rc_${r}" type="number" value="${v.routes[r].curr||''}"></div><div class="fr"><label>${r}便 前年</label><input id="rp_${r}" type="number" value="${v.routes[r].prev||''}"></div></div>`).join('')}
+    </div>
+    <div class="epsec">
+      <div class="epst">コメント（各スライド右側）</div>
+      <div class="fr"><label>スライド1：物量推移コメント</label><textarea id="fs0" rows="5">${d.comments.s0||''}</textarea></div>
+      <div class="fr"><label>スライド2：便別コメント</label><textarea id="fs1" rows="5">${d.comments.s1||''}</textarea></div>
+      <div class="fr"><label>スライド4：事故コメント</label><textarea id="fs3" rows="4">${d.comments.s3||''}</textarea></div>
+    </div>
+    <div class="epsec">
+      <div class="epst">事故データ</div>
+      <div id="aes">${d.quality.accidents.map((a,i)=>aeH(a,i)).join('')}</div>
+      <button class="barow" onclick="addAe()">＋ 事故を追加</button>
+    </div>`;
+}
+
+function aeH(a, i) {
+  const imgPreview = a.img ? `<img src="${a.img}" style="max-width:100%;max-height:200px;border-radius:4px;margin-top:6px;display:block">` : '';
+  return `<div class="ae" id="ae${i}">
+    <button class="aerm" onclick="rmAe(${i})">✕</button>
+    <div class="g2f"><div class="fr"><label>日付</label><input class="ad" value="${a.date||''}"></div><div class="fr"><label>便番号</label><input class="ar" value="${a.route||''}"></div></div>
+    <div class="fr"><label>お客様</label><input class="ac" value="${a.customer||''}"></div>
+    <div class="g2f">
+      <div class="fr"><label>事故種類</label><select class="at">${['誤配達','納品場所間違い','降し忘れ','延着','紛失（重大）','破損（重大）','車両事故','その他'].map(t=>`<option ${a.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="fr"><label>重大事故</label><select class="am"><option value="0" ${!a.major?'selected':''}>いいえ</option><option value="1" ${a.major?'selected':''}>はい</option></select></div>
+    </div>
+    <div class="fr"><label>事故詳細</label><textarea class="adet" rows="2">${a.detail||''}</textarea></div>
+    <div class="fr"><label>対応</label><textarea class="aact" rows="2">${a.action||''}</textarea></div>
+    <div class="fr"><label>現場写真（任意）</label>
+      <input type="file" accept="image/*" onchange="loadImg(this,${i})" style="font-size:11px">
+      <div id="imgpv${i}">${imgPreview}</div>
+      ${a.img ? `<button onclick="clearImg(${i})" style="font-size:10px;color:#888;background:none;border:none;cursor:pointer;margin-top:2px">✕ 画像を削除</button>` : ''}
+    </div>
+  </div>`;
+}
+
+function loadImg(input, i) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('imgpv'+i).innerHTML = `<img src="${e.target.result}" style="max-width:100%;max-height:200px;border-radius:4px;margin-top:6px;display:block">`;
+    input.dataset.b64 = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearImg(i) {
+  document.getElementById('imgpv'+i).innerHTML = '';
+  const ae = document.getElementById('ae'+i);
+  const inp = ae.querySelector('input[type=file]');
+  if (inp) { inp.value=''; delete inp.dataset.b64; }
+  // 再描画
+  const btn = ae.querySelector('button[onclick^="clearImg"]');
+  if (btn) btn.remove();
+}
+function addAe() { const c=document.getElementById('aes'),i=c.querySelectorAll('.ae').length,d=document.createElement('div');d.innerHTML=aeH({date:'',route:'',customer:'',type:'誤配達',detail:'',action:'',major:false},i);c.appendChild(d.firstElementChild); }
+function rmAe(i) { document.getElementById('ae'+i)?.remove(); document.querySelectorAll('.ae').forEach((e,j)=>{e.id='ae'+j;e.querySelector('.aerm').setAttribute('onclick','rmAe('+j+')');}); }
+
+function saveData() {
+  const d = DB[cur];
+  d.volume.totalKg    = +document.getElementById('ft').value||0;
+  d.volume.perDay     = +document.getElementById('fd').value||0;
+  d.volume.workDays   = +document.getElementById('fw').value||0;
+  d.volume.tokyoKg    = +document.getElementById('ftk').value||0;
+  d.volume.kanagawaKg = +document.getElementById('fkk').value||0;
+  d.volume.prevTotalKg= +document.getElementById('fpt').value||0;
+  d.volume.prevPerDay = +document.getElementById('fpd').value||0;
+  Object.keys(d.volume.routes).forEach(r => {
+    const c=document.getElementById('rc_'+r),p=document.getElementById('rp_'+r);
+    if(c) d.volume.routes[r].curr=+c.value||0;
+    if(p) d.volume.routes[r].prev=+p.value||0;
+  });
+  d.comments.s0 = document.getElementById('fs0').value;
+  d.comments.s1 = document.getElementById('fs1').value;
+  d.comments.s3 = document.getElementById('fs3').value;
+  d.quality.accidents = [];
+  document.querySelectorAll('.ae').forEach(e => {
+    const imgInput = e.querySelector('input[type=file]');
+    const imgData = imgInput && imgInput.dataset.b64 ? imgInput.dataset.b64 : (e.querySelector('#imgpv'+Array.from(document.querySelectorAll('.ae')).indexOf(e)+' img')?.src || '');
+    d.quality.accidents.push({date:e.querySelector('.ad').value,route:e.querySelector('.ar').value,customer:e.querySelector('.ac').value,type:e.querySelector('.at').value,detail:e.querySelector('.adet').value,action:e.querySelector('.aact').value,major:e.querySelector('.am').value==='1',img:imgInput?.dataset.b64||''});
+  });
+  closeEp(); kill(); renderAll();
+  const t=document.getElementById('toast');t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2000);
+}
+
+function addMonth() {
+  const s = prompt('追加する年月（例: 2026-04）');
+  if (!s || !/^\d{4}-\d{2}$/.test(s)) return;
+  if (DB[s]) { alert('すでに存在します'); return; }
+  DB[s] = mkEmpty(s);
+  cur = s;
+  initSelect();
+  kill(); renderAll();
+  setTimeout(openEp, 100);
+}
+function mkEmpty(k) {
+  const [y,m] = k.split('-');
+  return {label:y+'年'+parseInt(m)+'月',volume:{totalKg:0,perDay:0,workDays:21,tokyoKg:0,kanagawaKg:0,prevTotalKg:0,prevPerDay:0,routes:{"801":{curr:0,prev:0},"02":{curr:0,prev:0},"23":{curr:0,prev:0},"35":{curr:0,prev:0},"41":{curr:0,prev:0},"42":{curr:0,prev:0},"45":{curr:0,prev:0},"675":{curr:0,prev:0},"677":{curr:0,prev:0}}},quality:{accidents:[]},comments:{s0:'',s1:'',s3:''}};
+}
+
+function exportHtml() {
+  const h = document.documentElement.outerHTML;
+  const u = h.replace(/let DB = \{[\s\S]*?\};/, 'let DB = '+JSON.stringify(DB,null,2)+';');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([u],{type:'text/html;charset=utf-8'}));
+  a.download = 'hakudo_dashboard_'+cur.replace('-','')+'.html';
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+// ===== 初期化 =====
+initSelect();
+renderAll();
+</script>
+
+<div id="imgModal" onclick="closeImg()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out">
+  <img id="imgModalSrc" style="max-width:90vw;max-height:90vh;border-radius:6px;box-shadow:0 8px 40px rgba(0,0,0,.6)">
+</div>
+<script>
+function openImg(src){const m=document.getElementById('imgModal');m.style.display='flex';document.getElementById('imgModalSrc').src=src;}
+function closeImg(){document.getElementById('imgModal').style.display='none';}
+</script>
+</body>
+</html>
