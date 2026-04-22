@@ -52,8 +52,9 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#555;border-left:1px solid #333}
 .slide{width:1280px;height:720px;background:#f5f5f2;display:none;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.3);position:relative;z-index:1}
 .slide.on{display:flex}
 /* ヘッダー帯 */
-.shdr{height:44px;background:var(--dark);display:flex;align-items:center;padding:0 24px;flex-shrink:0}
-.shdr .logo{font-size:13px;font-weight:700;color:#fff;letter-spacing:.06em;margin-right:16px;font-family:'DM Mono',monospace}
+.shdr{height:44px;background:var(--dark);display:flex;align-items:center;padding:0 24px;flex-shrink:0;border-bottom:2px solid var(--accent)}
+.shdr .logo{font-size:13px;font-weight:700;color:#fff;letter-spacing:.06em;margin-right:16px;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:8px}
+.shdr .logo-mark{width:22px;height:22px;background:var(--accent);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#1a1a18;flex-shrink:0}
 .shdr .logo em{color:var(--accent);font-style:normal}
 .shdr .ttl{font-size:13px;font-weight:500;color:#ddd;letter-spacing:.02em}
 .shdr .pn{margin-left:auto;font-size:11px;color:#555;font-family:'DM Mono',monospace}
@@ -67,7 +68,10 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#555;border-left:1px solid #333}
 .card{background:#fff;border:1px solid var(--border);border-radius:6px;padding:12px 16px;display:flex;flex-direction:column}
 /* KPIバー */
 .krow{display:grid;gap:8px;flex-shrink:0}
-.kcard{background:#fff;border:1px solid var(--border);border-radius:6px;padding:10px 14px}
+.kcard{background:#fff;border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:6px;padding:10px 14px}
+.kcard.kc-warn{border-top-color:#d97706}
+.kcard.kc-danger{border-top-color:#dc2626}
+.kcard.kc-neutral{border-top-color:#94a3b8}
 .klbl{font-size:9px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;font-family:'DM Mono',monospace}
 .kval{font-size:22px;font-weight:700;color:var(--text);line-height:1.1;font-feature-settings:"tnum"}
 .kunit{font-size:11px;font-weight:400}
@@ -239,7 +243,7 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#555;border-left:1px solid #333}
 
 <!-- Slide 0: 物量推移 -->
 <div class="slide on" id="s0">
-  <div class="shdr"><div class="logo">SY<em>-</em>LINK</div><div class="ttl" id="ttl0"></div><div class="pn">1 / 5</div></div>
+  <div class="shdr"><div class="logo"><div class="logo-mark">SY</div>SY<em>-</em>LINK</div><div class="ttl" id="ttl0"></div><div class="pn">1 / 5</div></div>
   <div class="sbody">
     <div class="main">
       <div class="krow" style="grid-template-columns:repeat(4,1fr)" id="kpi0"></div>
@@ -264,7 +268,7 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#555;border-left:1px solid #333}
 
 <!-- Slide 1: 便別重量 -->
 <div class="slide" id="s1">
-  <div class="shdr"><div class="logo">SY<em>-</em>LINK</div><div class="ttl" id="ttl1"></div><div class="pn">2 / 5</div></div>
+  <div class="shdr"><div class="logo"><div class="logo-mark">SY</div>SY<em>-</em>LINK</div><div class="ttl" id="ttl1"></div><div class="pn">2 / 5</div></div>
   <div class="sbody">
     <div class="main">
       <div class="card" style="flex:1">
@@ -284,7 +288,7 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#555;border-left:1px solid #333}
 
 <!-- Slide 2: Kg単価 -->
 <div class="slide" id="s2">
-  <div class="shdr"><div class="logo">SY<em>-</em>LINK</div><div class="ttl" id="ttl2"></div><div class="pn">3 / 5</div></div>
+  <div class="shdr"><div class="logo"><div class="logo-mark">SY</div>SY<em>-</em>LINK</div><div class="ttl" id="ttl2"></div><div class="pn">3 / 5</div></div>
   <div class="sbody">
     <div class="main">
       <div class="card" style="flex:1">
@@ -306,7 +310,7 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#555;border-left:1px solid #333}
 
 <!-- Slide 3: 事故グラフ -->
 <div class="slide" id="s3">
-  <div class="shdr"><div class="logo">SY<em>-</em>LINK</div><div class="ttl" id="ttl3"></div><div class="pn">4 / 5</div></div>
+  <div class="shdr"><div class="logo"><div class="logo-mark">SY</div>SY<em>-</em>LINK</div><div class="ttl" id="ttl3"></div><div class="pn">4 / 5</div></div>
   <div class="sbody">
     <div class="main">
       <div class="card" style="flex:1">
@@ -326,7 +330,7 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#555;border-left:1px solid #333}
 
 <!-- Slide 4: 事故詳細 -->
 <div class="slide" id="s4">
-  <div class="shdr"><div class="logo">SY<em>-</em>LINK</div><div class="ttl" id="ttl4"></div><div class="pn">5 / 5</div></div>
+  <div class="shdr"><div class="logo"><div class="logo-mark">SY</div>SY<em>-</em>LINK</div><div class="ttl" id="ttl4"></div><div class="pn">5 / 5</div></div>
   <div class="sbody" style="flex-direction:column">
     <div class="krow" style="grid-template-columns:repeat(3,1fr);flex-shrink:0" id="kpi4"></div>
     <div class="card" style="flex:1;margin-top:10px;overflow-y:auto">
@@ -441,9 +445,9 @@ function renderAll() {
   const a = d.quality.accidents;
   const maj = a.filter(x => x.major).length;
   document.getElementById('kpi4').innerHTML = `
-    <div class="kcard"><div class="klbl">今月の事故件数</div><div class="kval">${a.length}<span class="kunit"> 件</span></div><div class="kdelta ${maj>0?'dn':'up'}">${maj>0?'重大 '+maj+'件':'重大事故なし'}</div></div>
-    <div class="kcard"><div class="klbl">重大事故（紛失・破損）</div><div class="kval">${maj}<span class="kunit"> 件</span></div><div class="kdelta neu">今月</div></div>
-    <div class="kcard"><div class="klbl">その他</div><div class="kval">${a.length-maj}<span class="kunit"> 件</span></div><div class="kdelta neu">今月</div></div>`;
+    <div class="kcard ${a.length>0?'kc-warn':''}"><div class="klbl">今月の事故件数</div><div class="kval">${a.length}<span class="kunit"> 件</span></div><div class="kdelta ${maj>0?'dn':'up'}">${maj>0?'重大 '+maj+'件':'重大事故なし'}</div></div>
+    <div class="kcard ${maj>0?'kc-danger':''}"><div class="klbl">重大事故（紛失・破損）</div><div class="kval">${maj}<span class="kunit"> 件</span></div><div class="kdelta ${maj>0?'dn':'up'}">${maj>0?'要対応':'問題なし'}</div></div>
+    <div class="kcard kc-neutral"><div class="klbl">その他</div><div class="kval">${a.length-maj}<span class="kunit"> 件</span></div><div class="kdelta neu">今月</div></div>`;
 
   // 事故テーブル
   const tbody = document.querySelector('#atbl4 tbody');
