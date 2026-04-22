@@ -272,8 +272,8 @@
     white-space: nowrap;
   }
   .th-group th:first-child { text-align: left; padding-left: 16px; }
-  .th-q1 { background: rgba(18,65,197,0.08); color: var(--accent); border-bottom: 2px solid rgba(18,65,197,0.3); }
-  .th-q2 { background: rgba(37,99,235,0.08); color: var(--accent2); border-bottom: 2px solid rgba(37,99,235,0.3); }
+  .th-q1 { background: rgba(25,25,25,0.05);   color: #444;            border-bottom: 2px solid rgba(25,25,25,0.2); }
+  .th-q2 { background: rgba(18,65,197,0.08);  color: var(--accent);   border-bottom: 2px solid rgba(18,65,197,0.3); }
   .th-total { background: rgba(15,23,42,0.04); color: var(--text-dim); font-size: 10px; text-align: right; padding: 8px 12px; border-bottom: 2px solid rgba(15,23,42,0.12); }
 
   tr.th-sub th {
@@ -308,10 +308,10 @@
     font-size: 10px; padding: 2px 7px; border-radius: 4px;
     margin-right: 6px; font-family: 'DM Mono', monospace; font-weight: 600;
   }
-  .cat-3pl { background: rgba(18,65,197,0.10); color: var(--accent); }
-  .cat-saas { background: rgba(59,130,246,0.15); color: var(--accent2); }
-  .cat-dev { background: rgba(245,158,11,0.15); color: var(--accent3); }
-  .cat-cons { background: rgba(168,85,247,0.15); color: #a855f7; }
+  .cat-3pl  { background: rgba(18,65,197,0.10);  color: #1241C5; }
+  .cat-saas { background: rgba(25,25,25,0.08);   color: #333; }
+  .cat-dev  { background: rgba(110,110,110,0.12); color: #555; }
+  .cat-cons { background: rgba(185,185,185,0.15); color: #888; }
 
   tr.subtotal td { font-weight: 600; color: var(--text); background: rgba(0,0,0,0.025); border-top: 1px solid var(--border); }
   tr.total td { font-weight: 700; color: var(--accent); background: rgba(18,65,197,0.06); border-top: 2px solid rgba(18,65,197,0.25); }
@@ -767,7 +767,7 @@
     <tr class="th-sub">
       <th class="th-q1" style="border-left:1px solid rgba(18,65,197,0.15);">当期粗利</th>
       <th class="th-q1">前年比</th>
-      <th class="th-q2" style="border-left:1px solid rgba(37,99,235,0.2);">当期粗利</th>
+      <th class="th-q2" style="border-left:1px solid rgba(18,65,197,0.2);">当期粗利</th>
       <th class="th-q2">前年比</th>
     </tr>
   </thead><tbody><tr>
@@ -1474,7 +1474,7 @@ function renderTable(data) {
     <tr class="th-sub">
       <th class="th-q1" style="border-left:1px solid rgba(18,65,197,0.15);">当期粗利</th>
       <th class="th-q1">前年比</th>
-      <th class="th-q2" style="border-left:1px solid rgba(37,99,235,0.2);">当期粗利</th>
+      <th class="th-q2" style="border-left:1px solid rgba(18,65,197,0.2);">当期粗利</th>
       <th class="th-q2">前年比</th>
     </tr>
   </thead><tbody>`;
