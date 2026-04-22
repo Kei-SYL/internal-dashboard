@@ -165,9 +165,9 @@
     height: 2px;
   }
 
-  .kpi-card.green::after { background: var(--accent); }
-  .kpi-card.blue::after { background: var(--accent2); }
-  .kpi-card.amber::after { background: var(--accent3); }
+  .kpi-card.green::after { background: #1241C5; }
+  .kpi-card.blue::after  { background: #444; }
+  .kpi-card.amber::after { background: #888; }
   .kpi-card.red::after { background: var(--danger); }
 
   .kpi-card:hover { border-color: rgba(18,65,197,0.3); }
@@ -552,6 +552,20 @@
   .nav-home { color: #64748b !important; font-size: 11px; gap: 5px; }
   .nav-home:hover { color: #e2e8f0 !important; }
 
+  /* Insight strip */
+  .insight-strip { display: flex; gap: 12px; margin: 16px 0 28px; overflow-x: auto; padding-bottom: 4px; }
+  .ic {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 18px; flex: 1; min-width: 148px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border-top: 3px solid var(--border);
+  }
+  .ic-pos { border-top-color: #1241C5; }
+  .ic-neg { border-top-color: #dc2626; }
+  .ic-neu { border-top-color: #888; }
+  .ic-head { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); font-family: 'DM Mono', monospace; margin-bottom: 6px; }
+  .ic-main { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; line-height: 1.3; }
+  .ic-sub  { font-size: 11px; color: var(--text-muted); }
 </style>
 </head>
 <body>
@@ -636,6 +650,9 @@
       <div class="kpi-sub">前年: ¥30,741,383</div>
     </div>
   </div>
+
+    <!-- Insight Strip -->
+    <div id="insightStrip" class="insight-strip"></div>
 
     <!-- Section: Quarter Comparison -->
     <div class="section-header">
@@ -1684,6 +1701,111 @@ function renderCommission(data) {
 }
 
 // =============================================
+// RENDER INSIGHTS
+// =============================================
+function renderInsights(data) {
+  const s = data.summary;
+  const d = data.detail || [];
+  const el = document.getElementById('insightStrip');
+  if (!el) return;
+
+  const h1c = s.reduce((a,r) => a + r.q1_2025 + r.q2_2025, 0);
+  const h1p = s.reduce((a,r) => a + r.q1_2024 + r.q2_2024, 0);
+  const h1Rate = h1p > 0 ? (h1c - h1p) / h1p : 0;
+
+  const q1 = s.reduce((a,r) => a + r.q1_2025, 0);
+  const q2 = s.reduce((a,r) => a + r.q2_2025, 0);
+  const momentum = q1 > 0 ? (q2 - q1) / q1 : 0;
+
+  const validDepts = s.filter(r => r.q1_2024 + r.q2_2024 > 100000);
+  const byYoY = validDepts.map(r => ({
+    dept: r.dept,
+    rate: ((r.q1_2025 + r.q2_2025) - (r.q1_2024 + r.q2_2024)) / (r.q1_2024 + r.q2_2024)
+  })).sort((a,b) => b.rate - a.rate);
+
+  const q2d = d.filter(r => r.period && r.period.includes('Q2') && r.gross > 50000 && r.revenue > 0 && r.margin < 0.98);
+  q2d.sort((a,b) => b.margin - a.margin);
+
+  const chips = [
+    {
+      type: h1Rate >= 0 ? 'pos' : 'neg',
+      head: 'H1 粗利 前年比',
+      main: (h1Rate >= 0 ? '+' : '') + (h1Rate * 100).toFixed(1) + '%',
+      sub: `¥${fmt(h1c)} / 前年 ¥${fmt(h1p)}`
+    },
+    {
+      type: momentum >= 0 ? 'pos' : 'neg',
+      head: 'Q1 → Q2 加速度',
+      main: (momentum >= 0 ? '+' : '') + (momentum * 100).toFixed(1) + '%',
+      sub: momentum >= 0 ? '勢い継続中' : '減速注意'
+    },
+    byYoY.length > 0 && byYoY[0].rate > 0.05 ? {
+      type: 'pos',
+      head: '伸び率 トップ',
+      main: byYoY[0].dept,
+      sub: '+' + (byYoY[0].rate * 100).toFixed(0) + '% 前年比'
+    } : null,
+    byYoY.length > 0 && byYoY[byYoY.length-1].rate < -0.1 ? {
+      type: 'neg',
+      head: '要注意',
+      main: byYoY[byYoY.length-1].dept,
+      sub: (byYoY[byYoY.length-1].rate * 100).toFixed(0) + '% 前年比'
+    } : null,
+    q2d.length > 0 ? {
+      type: 'neu',
+      head: '粗利率 Q2 最高',
+      main: q2d[0].dept,
+      sub: (q2d[0].margin * 100).toFixed(1) + '%'
+    } : null,
+  ].filter(Boolean);
+
+  el.innerHTML = chips.map(c => `
+    <div class="ic ic-${c.type}">
+      <div class="ic-head">${c.head}</div>
+      <div class="ic-main">${c.main}</div>
+      <div class="ic-sub">${c.sub}</div>
+    </div>`).join('');
+}
+
+// =============================================
+// RENDER COST HEATMAP (dynamic)
+// =============================================
+function renderCostHeatmap(data) {
+  const d = data.detail || [];
+  const el = document.getElementById('costHeatmap');
+  if (!el || !d.length) return;
+  const catClass = { '3PL':'cat-3pl','SaaS':'cat-saas','受託開発':'cat-dev','コンサルティング':'cat-cons' };
+  const catAbbr  = { '3PL':'3PL','SaaS':'SaaS','受託開発':'DEV','コンサルティング':'CONS' };
+  const byDept = {};
+  d.forEach(r => {
+    if (!byDept[r.dept]) byDept[r.dept] = { cat: r.category, rev: 0, cost: 0, gross: 0 };
+    byDept[r.dept].rev   += r.revenue;
+    byDept[r.dept].cost  += r.cost;
+    byDept[r.dept].gross += r.gross;
+  });
+  const sorted = Object.entries(byDept)
+    .filter(([,v]) => v.gross > 0)
+    .sort((a,b) => b[1].gross - a[1].gross);
+  el.innerHTML = sorted.map(([dept, v]) => {
+    const margin   = v.rev > 0 ? v.gross / v.rev : 0;
+    const costPct  = v.rev > 0 ? v.cost / v.rev  : 0;
+    const grossPct = 1 - costPct;
+    const cc  = catClass[v.cat] || 'cat-3pl';
+    const abbr = catAbbr[v.cat] || v.cat.slice(0,4);
+    const col  = margin > 0.3 ? '#1241C5' : margin > 0.15 ? '#555' : '#888';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--border);">
+      <span class="category-label ${cc}" style="min-width:36px;text-align:center;">${abbr}</span>
+      <span style="flex:1;font-size:12px;">${dept}</span>
+      <div style="width:100px;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
+        <div style="width:${Math.round(costPct*100)}%;height:100%;background:rgba(180,180,180,0.5);border-radius:4px 0 0 4px;display:inline-block;"></div>
+        <div style="width:${Math.round(grossPct*100)}%;height:100%;background:var(--accent);border-radius:0 4px 4px 0;display:inline-block;"></div>
+      </div>
+      <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:${col};min-width:42px;text-align:right;">${(margin*100).toFixed(1)}%</span>
+    </div>`;
+  }).join('');
+}
+
+// =============================================
 // FULL RENDER
 // =============================================
 function renderAll(data) {
@@ -1691,9 +1813,11 @@ function renderAll(data) {
   document.getElementById('footerText').textContent =
     `最終更新: ${data.updatedAt} | データソース: 粗利分析xlsx`;
   renderKPI(data);
+  renderInsights(data);
   renderCharts(data);
   renderTable(data);
   renderCostAnalysis(data);
+  renderCostHeatmap(data);
   renderCommission(data);
 }
 

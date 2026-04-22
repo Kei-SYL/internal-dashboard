@@ -107,9 +107,9 @@
     position: relative; overflow: hidden; transition: border-color 0.2s;
   }
   .kpi-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
-  .kpi-card.green::after { background: var(--accent); }
-  .kpi-card.blue::after { background: var(--accent2); }
-  .kpi-card.amber::after { background: var(--accent3); }
+  .kpi-card.green::after { background: #1241C5; }
+  .kpi-card.blue::after  { background: #444; }
+  .kpi-card.amber::after { background: #888; }
   .kpi-card.purple::after { background: var(--accent4); }
   .kpi-card:hover { border-color: rgba(18,65,197,0.35); }
 
@@ -205,6 +205,21 @@
   .status-msg.error { background: rgba(220,38,38,0.1); color: var(--negative); border: 1px solid rgba(220,38,38,0.3); }
 
   footer { border-top: 1px solid var(--border); padding: 20px 0; text-align: center; font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+
+  /* Insight strip */
+  .insight-strip { display: flex; gap: 12px; margin: 16px 0 28px; overflow-x: auto; padding-bottom: 4px; }
+  .ic {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 18px; flex: 1; min-width: 148px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border-top: 3px solid var(--border);
+  }
+  .ic-pos { border-top-color: #1241C5; }
+  .ic-neg { border-top-color: #dc2626; }
+  .ic-neu { border-top-color: #888; }
+  .ic-head { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); font-family: 'DM Mono', monospace; margin-bottom: 6px; }
+  .ic-main { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; line-height: 1.3; }
+  .ic-sub  { font-size: 11px; color: var(--text-muted); }
 
   @media (max-width: 900px) {
     .kpi-grid { grid-template-columns: repeat(2,1fr); }
@@ -346,6 +361,9 @@
       <div class="kpi-sub">2026.2 → 2026.3</div>
     </div>
   </div>
+
+    <!-- Insight Strip -->
+    <div id="insightStrip" class="insight-strip"></div>
 
     <div class="section-header">
       <span class="section-title">月次推移</span>
@@ -722,6 +740,76 @@ function renderTable(data) {
 }
 
 // =============================================
+// RENDER INSIGHTS
+// =============================================
+function renderInsights(data) {
+  const months = data.months;
+  const monthly = data.monthly;
+  const el = document.getElementById('insightStrip');
+  if (!el || !months.length) return;
+
+  const last = months[months.length - 1];
+  const prev = months.length > 1 ? months[months.length - 2] : null;
+  const lastGross = monthly[last].total.gross;
+  const prevGross = prev ? monthly[prev].total.gross : null;
+  const mom = (prevGross && prevGross > 0) ? (lastGross - prevGross) / prevGross : null;
+
+  const grossByMonth = months.map(m => ({ m, g: monthly[m].total.gross }));
+  grossByMonth.sort((a,b) => b.g - a.g);
+  const bestMonth = grossByMonth[0];
+
+  const clientGross = {}, clientRev = {};
+  CLIENTS.forEach(c => {
+    months.forEach(m => {
+      const d = monthly[m].clients[c];
+      if (d) { clientGross[c] = (clientGross[c] || 0) + d.gross; clientRev[c] = (clientRev[c] || 0) + d.revenue; }
+    });
+  });
+  const clientMargins = CLIENTS.filter(c => clientRev[c] > 0)
+    .map(c => ({ c, margin: clientGross[c] / clientRev[c] }))
+    .sort((a,b) => b.margin - a.margin);
+
+  const n = months.length;
+  const r3 = months.slice(Math.max(0,n-3)).reduce((a,m) => a + monthly[m].total.gross, 0);
+  const p3 = months.slice(Math.max(0,n-6), Math.max(0,n-3)).reduce((a,m) => a + monthly[m].total.gross, 0);
+  const trend3 = p3 > 0 ? (r3 - p3) / p3 : null;
+
+  const chips = [
+    mom !== null ? {
+      type: mom >= 0 ? 'pos' : 'neg',
+      head: '直近 月次変化',
+      main: (mom >= 0 ? '+' : '') + (mom * 100).toFixed(1) + '%',
+      sub: `${prev} → ${last}`
+    } : null,
+    bestMonth ? {
+      type: 'neu',
+      head: '累計 最高利益月',
+      main: bestMonth.m,
+      sub: '粗利 ¥' + fmt(bestMonth.g)
+    } : null,
+    clientMargins.length > 0 ? {
+      type: 'pos',
+      head: '粗利率 最高取引先',
+      main: clientMargins[0].c,
+      sub: (clientMargins[0].margin * 100).toFixed(1) + '%'
+    } : null,
+    trend3 !== null ? {
+      type: trend3 >= 0 ? 'pos' : 'neg',
+      head: '直近3ヶ月 vs 前3ヶ月',
+      main: (trend3 >= 0 ? '+' : '') + (trend3 * 100).toFixed(1) + '%',
+      sub: trend3 >= 0 ? 'トレンド上昇' : 'トレンド下降'
+    } : null,
+  ].filter(Boolean);
+
+  el.innerHTML = chips.map(c => `
+    <div class="ic ic-${c.type}">
+      <div class="ic-head">${c.head}</div>
+      <div class="ic-main">${c.main}</div>
+      <div class="ic-sub">${c.sub}</div>
+    </div>`).join('');
+}
+
+// =============================================
 // FULL RENDER
 // =============================================
 function renderAll(data) {
@@ -729,6 +817,7 @@ function renderAll(data) {
   document.getElementById('footerText').textContent = `最終更新: ${data.updatedAt} | データソース: 3PL損益xlsx`;
   renderTabs(data);
   renderKPI(data);
+  renderInsights(data);
   renderCharts(data);
   renderTable(data);
 }
