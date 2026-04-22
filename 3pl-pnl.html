@@ -621,7 +621,8 @@ function renderRouteCharts(data, month) {
   document.getElementById('routeChartTitle').textContent = `白銅 ルート別 売上・原価・粗利（${month}）`;
   document.getElementById('routeChartTitle2').textContent = `ムトウ ルート別 売上・原価・粗利（${month}）`;
 
-  const makeRouteChart = (ctxId, routes, color1, color2) => {
+  // 原価＋粗利 積み上げ棒グラフ（売上高 = 原価+粗利）
+  const makeRouteChart = (ctxId, routes, costColor, grossColor) => {
     const labels = Object.keys(routes);
     const ctx = document.getElementById(ctxId).getContext('2d');
     return new Chart(ctx, {
@@ -629,27 +630,34 @@ function renderRouteCharts(data, month) {
       data: {
         labels,
         datasets: [
-          { label: '売上高', data: labels.map(r => routes[r].revenue), backgroundColor: color1, borderRadius: 3 },
-          { label: '原価', data: labels.map(r => routes[r].cost), backgroundColor: color2, borderRadius: 3 },
-          { label: '粗利', data: labels.map(r => routes[r].gross), backgroundColor: 'rgba(14,168,138,0.7)', borderRadius: 3 },
+          { label: '原価', data: labels.map(r => routes[r].cost),  backgroundColor: costColor,  stack: 's', borderRadius: 0 },
+          { label: '粗利', data: labels.map(r => routes[r].gross), backgroundColor: grossColor, stack: 's', borderRadius: 3, borderSkipped: false },
         ]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
         plugins: {
           legend: { labels: { color: '#475569', font: { family: 'DM Mono', size: 10 }, boxWidth: 10 } },
-          tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ¥${fmt(ctx.parsed.y)}` } }
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.dataset.label}: ¥${fmt(ctx.parsed.y)}`,
+              afterBody: items => {
+                const r = routes[items[0]?.label];
+                return r ? [`売上高: ¥${fmt(r.revenue)}`, `粗利率: ${r.revenue > 0 ? (r.gross/r.revenue*100).toFixed(1) : 0}%`] : [];
+              }
+            }
+          }
         },
         scales: {
-          x: { ticks: { color: '#64748b', font: { size: 10 }, maxRotation: 30 }, grid: { color: 'rgba(0,0,0,0.06)' } },
-          y: { ticks: { color: '#64748b', font: { family: 'DM Mono', size: 10 }, callback: v => '¥' + fmt(v) }, grid: { color: 'rgba(0,0,0,0.06)' } }
+          x: { stacked: true, ticks: { color: '#64748b', font: { size: 10 }, maxRotation: 30 }, grid: { color: 'rgba(0,0,0,0.06)' } },
+          y: { stacked: true, ticks: { color: '#64748b', font: { family: 'DM Mono', size: 10 }, callback: v => '¥' + fmt(v) }, grid: { color: 'rgba(0,0,0,0.06)' } }
         }
       }
     });
   };
 
-  charts.route1 = makeRouteChart('routeChart1', routes1, 'rgba(14,168,138,0.5)', 'rgba(14,168,138,0.2)');
-  charts.route2 = makeRouteChart('routeChart2', routes2, 'rgba(37,99,235,0.5)', 'rgba(37,99,235,0.2)');
+  charts.route1 = makeRouteChart('routeChart1', routes1, 'rgba(14,168,138,0.3)', 'rgba(14,168,138,0.85)');
+  charts.route2 = makeRouteChart('routeChart2', routes2, 'rgba(37,99,235,0.3)', 'rgba(37,99,235,0.85)');
 }
 
 // =============================================
