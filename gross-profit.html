@@ -516,6 +516,28 @@
     .commission-grid { grid-template-columns: 1fr; }
   }
 
+  /* ===== INSIGHT STRIP ===== */
+  .insight-strip {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin-bottom: 28px;
+  }
+  .ic {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    flex: 1; min-width: 200px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .ic-head { font-size: 10px; color: var(--text-muted); font-family: 'DM Mono', monospace; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .ic-main { font-size: 18px; font-weight: 700; line-height: 1.1; color: var(--text); }
+  .ic-sub  { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+  .ic-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .ic-pos .ic-main { color: #0d9488; }
+  .ic-neg .ic-main { color: #dc2626; }
+  .ic-neu .ic-main { color: var(--accent); }
+
   /* Nav bar */
   .nav-bar {
     background: #0f172a;
@@ -636,6 +658,9 @@
       <div class="kpi-sub">前年: ¥30,741,383</div>
     </div>
   </div>
+
+    <!-- Insight Strip -->
+    <div id="insightStrip" class="insight-strip"></div>
 
     <!-- Section: Quarter Comparison -->
     <div class="section-header">
@@ -1700,6 +1725,73 @@ function renderCommission(data) {
 }
 
 // =============================================
+// INSIGHT STRIP
+// =============================================
+function renderInsights(data) {
+  const strip = document.getElementById('insightStrip');
+  if (!strip) return;
+
+  const chips = [];
+
+  // 1. H1 前年比
+  const h1 = data.summary.reduce((s, r) => s + r.q1_2025 + r.q2_2025, 0);
+  const h1prev = data.summary.reduce((s, r) => s + (r.q1_2024 || 0) + (r.q2_2024 || 0), 0);
+  if (h1prev > 0) {
+    const yoy = ((h1 - h1prev) / h1prev * 100).toFixed(1);
+    const cls = +yoy >= 0 ? 'ic-pos' : 'ic-neg';
+    const icon = +yoy >= 0 ? '📈' : '📉';
+    chips.push({ icon, head: '上半期 前年比', main: `${+yoy >= 0 ? '+' : ''}${yoy}%`, sub: `前年: ¥${h1prev.toLocaleString()}`, cls });
+  }
+
+  // 2. Q1→Q2 モメンタム
+  const q1 = data.summary.reduce((s, r) => s + r.q1_2025, 0);
+  const q2 = data.summary.reduce((s, r) => s + r.q2_2025, 0);
+  if (q1 > 0) {
+    const mom = ((q2 - q1) / q1 * 100).toFixed(1);
+    const cls = +mom >= 0 ? 'ic-pos' : 'ic-neg';
+    chips.push({ icon: '⚡', head: 'Q1→Q2 モメンタム', main: `${+mom >= 0 ? '+' : ''}${mom}%`, sub: `Q1: ¥${q1.toLocaleString()} → Q2: ¥${q2.toLocaleString()}`, cls });
+  }
+
+  // 3. 最高成長部門（Q2 前年比）
+  const growthDepts = data.summary
+    .filter(r => (r.q2_2024 || 0) > 0)
+    .map(r => ({ dept: r.dept, growth: (r.q2_2025 - r.q2_2024) / r.q2_2024 * 100 }))
+    .sort((a, b) => b.growth - a.growth);
+  if (growthDepts.length > 0) {
+    const top = growthDepts[0];
+    chips.push({ icon: '🏆', head: 'Q2 最高成長部門', main: top.dept, sub: `前年比 +${top.growth.toFixed(1)}%`, cls: 'ic-pos' });
+  }
+
+  // 4. 要注意部門（Q2 前年比 最低）
+  if (growthDepts.length > 1) {
+    const bot = growthDepts[growthDepts.length - 1];
+    if (bot.growth < 0) {
+      chips.push({ icon: '⚠️', head: 'Q2 要注意部門', main: bot.dept, sub: `前年比 ${bot.growth.toFixed(1)}%`, cls: 'ic-neg' });
+    }
+  }
+
+  // 5. 最高粗利率部門（Q2）
+  const marginDepts = data.detail
+    .filter(r => r.period === '2025 Q2' && r.margin > 0)
+    .sort((a, b) => b.margin - a.margin);
+  if (marginDepts.length > 0) {
+    const best = marginDepts[0];
+    chips.push({ icon: '💎', head: 'Q2 最高粗利率', main: best.dept, sub: `粗利率 ${(best.margin * 100).toFixed(1)}%`, cls: 'ic-neu' });
+  }
+
+  strip.innerHTML = chips.map(c => `
+    <div class="ic ${c.cls || ''}">
+      <div class="ic-icon">${c.icon}</div>
+      <div>
+        <div class="ic-head">${c.head}</div>
+        <div class="ic-main">${c.main}</div>
+        <div class="ic-sub">${c.sub}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// =============================================
 // FULL RENDER
 // =============================================
 function renderAll(data) {
@@ -1707,6 +1799,7 @@ function renderAll(data) {
   document.getElementById('footerText').textContent =
     `最終更新: ${data.updatedAt} | データソース: 粗利分析xlsx`;
   renderKPI(data);
+  renderInsights(data);
   renderCharts(data);
   renderTable(data);
   renderCostAnalysis(data);
