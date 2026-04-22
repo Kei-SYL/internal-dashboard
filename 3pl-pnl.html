@@ -10,10 +10,10 @@
     --surface: #ffffff;
     --surface2: #eef2f7;
     --border: #dde3ed;
-    --accent: #0ea88a;
-    --accent2: #2563eb;
-    --accent3: #d97706;
-    --accent4: #7c3aed;
+    --accent: #1241C5;
+    --accent2: #4060D4;
+    --accent3: #4060D4;
+    --accent4: #7080E0;
     --danger: #dc2626;
     --text: #0f172a;
     --text-muted: #64748b;
@@ -23,8 +23,6 @@
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { filter: grayscale(1); }
-
   body {
     font-family: 'Noto Sans JP', sans-serif;
     background: var(--bg);
@@ -38,8 +36,8 @@
     position: fixed;
     inset: 0;
     background-image:
-      linear-gradient(rgba(143,195,31,0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(143,195,31,0.05) 1px, transparent 1px);
+      linear-gradient(rgba(18,65,197,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(18,65,197,0.04) 1px, transparent 1px);
     background-size: 40px 40px;
     pointer-events: none;
     z-index: 0;
@@ -113,7 +111,7 @@
   .kpi-card.blue::after { background: var(--accent2); }
   .kpi-card.amber::after { background: var(--accent3); }
   .kpi-card.purple::after { background: var(--accent4); }
-  .kpi-card:hover { border-color: rgba(14,168,138,0.4); }
+  .kpi-card:hover { border-color: rgba(18,65,197,0.35); }
 
   .kpi-label { font-size: 11px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; }
   .kpi-value { font-family: 'DM Mono', monospace; font-size: 24px; font-weight: 500; line-height: 1; margin-bottom: 8px; }
@@ -157,7 +155,7 @@
   td:first-child { text-align: left; font-family: 'Noto Sans JP', sans-serif; font-size: 13px; color: var(--text); }
 
   tr.subtotal td { font-weight: 600; color: var(--text); background: rgba(0,0,0,0.02); border-top: 1px solid var(--border); }
-  tr.total td { font-weight: 700; color: var(--accent); background: rgba(14,168,138,0.06); border-top: 2px solid rgba(14,168,138,0.3); }
+  tr.total td { font-weight: 700; color: var(--accent); background: rgba(18,65,197,0.06); border-top: 2px solid rgba(18,65,197,0.25); }
 
   .positive { color: var(--positive) !important; }
   .negative { color: var(--negative) !important; }
@@ -166,8 +164,8 @@
     display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 4px;
     margin-right: 6px; font-family: 'DM Mono', monospace;
   }
-  .badge-shirako { background: rgba(14,168,138,0.12); color: var(--accent); }
-  .badge-mutou { background: rgba(37,99,235,0.12); color: var(--accent2); }
+  .badge-shirako { background: rgba(18,65,197,0.12); color: var(--accent); }
+  .badge-mutou { background: rgba(64,96,212,0.12); color: var(--accent2); }
   .badge-yoshikawa { background: rgba(217,119,6,0.12); color: var(--accent3); }
   .badge-natura { background: rgba(124,58,237,0.12); color: var(--accent4); }
 
@@ -189,7 +187,7 @@
     border: 2px dashed var(--border); border-radius: 10px; padding: 32px;
     text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 16px;
   }
-  .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: rgba(14,168,138,0.04); }
+  .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: rgba(18,65,197,0.04); }
   .drop-icon { font-size: 32px; margin-bottom: 10px; }
   .drop-text { font-size: 13px; color: var(--text-muted); }
   .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
@@ -444,10 +442,10 @@ let pendingFile = null;
 
 const CLIENTS = ['白銅','ムトウユニパック','吉川紙商事','ナチュラジャパン'];
 const CLIENT_COLORS = {
-  '白銅':       { solid: 'rgba(40,40,40,0.85)',   faint: 'rgba(40,40,40,0.15)',   line: '#333' },
-  'ムトウユニパック': { solid: 'rgba(85,85,85,0.85)',   faint: 'rgba(85,85,85,0.15)',   line: '#555' },
-  '吉川紙商事':     { solid: 'rgba(130,130,130,0.85)', faint: 'rgba(130,130,130,0.15)', line: '#888' },
-  'ナチュラジャパン':  { solid: 'rgba(175,175,175,0.85)', faint: 'rgba(175,175,175,0.15)', line: '#aaa' },
+  '白銅':       { solid: 'rgba(18,65,197,0.85)',  faint: 'rgba(18,65,197,0.15)',  line: '#1241C5' },
+  'ムトウユニパック': { solid: 'rgba(64,96,212,0.80)',  faint: 'rgba(64,96,212,0.15)',  line: '#4060D4' },
+  '吉川紙商事':     { solid: 'rgba(130,130,130,0.75)', faint: 'rgba(130,130,130,0.15)', line: '#888' },
+  'ナチュラジャパン':  { solid: 'rgba(180,180,180,0.70)', faint: 'rgba(180,180,180,0.15)', line: '#aaa' },
 };
 const CLIENT_BADGE = {
   '白銅': 'badge-shirako',
@@ -657,8 +655,8 @@ function renderRouteCharts(data, month) {
     });
   };
 
-  charts.route1 = makeRouteChart('routeChart1', routes1, 'rgba(175,175,175,0.45)', 'rgba(40,40,40,0.85)');
-  charts.route2 = makeRouteChart('routeChart2', routes2, 'rgba(175,175,175,0.45)', 'rgba(85,85,85,0.85)');
+  charts.route1 = makeRouteChart('routeChart1', routes1, 'rgba(200,200,200,0.5)', 'rgba(18,65,197,0.85)');
+  charts.route2 = makeRouteChart('routeChart2', routes2, 'rgba(200,200,200,0.5)', 'rgba(64,96,212,0.85)');
 }
 
 // =============================================
@@ -846,7 +844,7 @@ function closeModal() {
 function handleFile(file) {
   if (!file) return;
   pendingFile = file;
-  document.getElementById('dropText').innerHTML = `📄 ${file.name}<br><span style="font-size:11px;color:#0ea88a;">ファイル選択済み</span>`;
+  document.getElementById('dropText').innerHTML = `📄 ${file.name}<br><span style="font-size:11px;color:#1241C5;">ファイル選択済み</span>`;
   document.getElementById('btnProcess').style.display = 'inline-block';
 }
 
