@@ -636,31 +636,49 @@
     <div class="kpi-grid" id="kpiGrid">
     <div class="kpi-card green">
       <div class="kpi-label">上半期 粗利合計 (2025)</div>
-      <div class="kpi-value">¥30,607,458</div>
-      <div class="kpi-sub">前年比 <span class="negative">-133,925</span></div>
+      <div class="kpi-value">¥16,651,500</div>
+      <div class="kpi-sub">前年比 <span class="positive">+3,095,500</span></div>
     </div>
   
     <div class="kpi-card blue">
       <div class="kpi-label">Q1 粗利合計 (2025)</div>
-      <div class="kpi-value">¥15,138,993</div>
-      <div class="kpi-sub">前年比 <span class="negative">-2,327,568</span></div>
+      <div class="kpi-value">¥16,651,500</div>
+      <div class="kpi-sub">前年比 <span class="positive">+3,095,500</span></div>
     </div>
   
     <div class="kpi-card amber">
       <div class="kpi-label">Q2 粗利合計 (2025)</div>
-      <div class="kpi-value">¥15,468,465</div>
-      <div class="kpi-sub">前年比 <span class="positive">+2,193,643</span></div>
+      <div class="kpi-value">¥0</div>
+      <div class="kpi-sub">前年比 <span class="positive">+0</span></div>
     </div>
   
-    <div class="kpi-card red">
+    <div class="kpi-card green">
       <div class="kpi-label">前年増減率 (H1)</div>
-      <div class="kpi-value">-0.44%</div>
-      <div class="kpi-sub">前年: ¥30,741,383</div>
+      <div class="kpi-value">+22.83%</div>
+      <div class="kpi-sub">前年: ¥13,556,000</div>
     </div>
   </div>
 
     <!-- Insight Strip -->
-    <div id="insightStrip" class="insight-strip"></div>
+    <div id="insightStrip" class="insight-strip">
+    <div class="ic ic-pos">
+      <div class="ic-icon">📈</div>
+      <div>
+        <div class="ic-head">上半期 前年比</div>
+        <div class="ic-main">+22.8%</div>
+        <div class="ic-sub">前年: ¥13,556,000</div>
+      </div>
+    </div>
+  
+    <div class="ic ic-neg">
+      <div class="ic-icon">⚡</div>
+      <div>
+        <div class="ic-head">Q1→Q2 モメンタム</div>
+        <div class="ic-main">-100.0%</div>
+        <div class="ic-sub">Q1: ¥16,651,500 → Q2: ¥0</div>
+      </div>
+    </div>
+  </div>
 
     <!-- Section: Quarter Comparison -->
     <div class="section-header">
@@ -675,21 +693,21 @@
           <span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;">単位: 円</span>
         </div>
         <div class="chart-container tall">
-          <canvas id="quarterChart" width="2604" height="640" style="display: block; box-sizing: border-box; height: 320px; width: 1302px;"></canvas>
+          <canvas id="quarterChart" width="2604" height="800" style="display: block; box-sizing: border-box; height: 400px; width: 1302px;"></canvas>
         </div>
       </div>
 
       <div class="card">
         <div class="card-title">上半期 カテゴリ別 粗利構成（2025）</div>
         <div class="chart-container">
-          <canvas id="donutChart" width="1236" height="520" style="display: block; box-sizing: border-box; height: 260px; width: 618px;"></canvas>
+          <canvas id="donutChart" width="2604" height="640" style="display: block; box-sizing: border-box; height: 320px; width: 1302px;"></canvas>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-title">粗利率 Q1 vs Q2（部門別・2025）<span id="marginFullBadge" style="margin-left:10px;font-size:10px;font-weight:400;color:#64748b;font-family:'DM Mono',monospace;"></span></div>
+        <div class="card-title">粗利率 Q1 vs Q2（部門別・2025）<span id="marginFullBadge" style="margin-left:10px;font-size:10px;font-weight:400;color:#64748b;font-family:'DM Mono',monospace;">※ trackerr・コンサルティング（青和向け） は粗利率≒100%のため除外</span></div>
         <div class="chart-container">
-          <canvas id="marginChart"></canvas>
+          <canvas id="marginChart" style="box-sizing: border-box; display: block; height: 320px; width: 1302px;" width="2604" height="640"></canvas>
         </div>
       </div>
     </div>
@@ -706,7 +724,7 @@
           <span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;">単位: 円 ／ H1合計</span>
         </div>
         <div class="chart-container tall">
-          <canvas id="stackedCostChart" width="2604" height="640" style="display: block; box-sizing: border-box; height: 320px; width: 1302px;"></canvas>
+          <canvas id="stackedCostChart" width="2604" height="800" style="display: block; box-sizing: border-box; height: 400px; width: 1302px;"></canvas>
         </div>
       </div>
       <div class="card">
@@ -717,28 +735,21 @@
         <div style="width:100px;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
           <div style="width:78%;height:100%;background:rgba(100,116,139,0.5);border-radius:4px 0 0 4px;display:inline-block;"></div><div style="width:22%;height:100%;background:var(--accent);border-radius:0 4px 4px 0;display:inline-block;"></div>
         </div>
-        <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:hsl(26,60%,45%);min-width:42px;text-align:right;">21.9%</span>
+        <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:hsl(26,60%,45%);min-width:42px;text-align:right;">21.6%</span>
       </div><div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--border);">
         <span class="category-label cat-3pl" style="min-width:36px;text-align:center;">3PL</span>
         <span style="flex:1;font-size:12px;font-family:'Noto Sans JP',sans-serif;">ムトウユニパック</span>
         <div style="width:100px;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
           <div style="width:89%;height:100%;background:rgba(100,116,139,0.5);border-radius:4px 0 0 4px;display:inline-block;"></div><div style="width:11%;height:100%;background:var(--accent);border-radius:0 4px 4px 0;display:inline-block;"></div>
         </div>
-        <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:hsl(14,60%,45%);min-width:42px;text-align:right;">11.3%</span>
+        <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:hsl(14,60%,45%);min-width:42px;text-align:right;">11.5%</span>
       </div><div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--border);">
-        <span class="category-label cat-dev" style="min-width:36px;text-align:center;">DEV</span>
+        <span class="category-label " style="min-width:36px;text-align:center;">ソフトウェア</span>
         <span style="flex:1;font-size:12px;font-family:'Noto Sans JP',sans-serif;">受託開発</span>
         <div style="width:100px;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
           <div style="width:64%;height:100%;background:rgba(100,116,139,0.5);border-radius:4px 0 0 4px;display:inline-block;"></div><div style="width:36%;height:100%;background:var(--accent);border-radius:0 4px 4px 0;display:inline-block;"></div>
         </div>
-        <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:hsl(43,60%,45%);min-width:42px;text-align:right;">35.8%</span>
-      </div><div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--border);">
-        <span class="category-label cat-saas" style="min-width:36px;text-align:center;">SaaS</span>
-        <span style="flex:1;font-size:12px;font-family:'Noto Sans JP',sans-serif;">配録</span>
-        <div style="width:100px;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
-          <div style="width:69%;height:100%;background:rgba(100,116,139,0.5);border-radius:4px 0 0 4px;display:inline-block;"></div><div style="width:31%;height:100%;background:var(--accent);border-radius:0 4px 4px 0;display:inline-block;"></div>
-        </div>
-        <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:hsl(37,60%,45%);min-width:42px;text-align:right;">30.7%</span>
+        <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:hsl(43,60%,45%);min-width:42px;text-align:right;">35.7%</span>
       </div><div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--border);">
         <span class="category-label cat-saas" style="min-width:36px;text-align:center;">SaaS</span>
         <span style="flex:1;font-size:12px;font-family:'Noto Sans JP',sans-serif;">trackerr</span>
@@ -747,8 +758,43 @@
         </div>
         <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:hsl(120,60%,45%);min-width:42px;text-align:right;">100.0%</span>
       </div><div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--border);">
+        <span class="category-label cat-saas" style="min-width:36px;text-align:center;">SaaS</span>
+        <span style="flex:1;font-size:12px;font-family:'Noto Sans JP',sans-serif;">配録</span>
+        <div style="width:100px;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
+          <div style="width:67%;height:100%;background:rgba(100,116,139,0.5);border-radius:4px 0 0 4px;display:inline-block;"></div><div style="width:33%;height:100%;background:var(--accent);border-radius:0 4px 4px 0;display:inline-block;"></div>
+        </div>
+        <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:hsl(40,60%,45%);min-width:42px;text-align:right;">33.0%</span>
+      </div><div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--border);">
+        <span class="category-label cat-saas" style="min-width:36px;text-align:center;">SaaS</span>
+        <span style="flex:1;font-size:12px;font-family:'Noto Sans JP',sans-serif;">イツクルLOGI</span>
+        <div style="width:100px;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
+          <div style="width:0%;height:100%;background:rgba(100,116,139,0.5);border-radius:4px 0 0 4px;display:inline-block;"></div><div style="width:100%;height:100%;background:var(--accent);border-radius:0 4px 4px 0;display:inline-block;"></div>
+        </div>
+        <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:hsl(120,60%,45%);min-width:42px;text-align:right;">100.0%</span>
+      </div><div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--border);">
         <span class="category-label cat-cons" style="min-width:36px;text-align:center;">CONS</span>
         <span style="flex:1;font-size:12px;font-family:'Noto Sans JP',sans-serif;">コンサルティング（青和向け）</span>
+        <div style="width:100px;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
+          <div style="width:0%;height:100%;background:rgba(100,116,139,0.5);border-radius:4px 0 0 4px;display:inline-block;"></div><div style="width:100%;height:100%;background:var(--accent);border-radius:0 4px 4px 0;display:inline-block;"></div>
+        </div>
+        <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:hsl(120,60%,45%);min-width:42px;text-align:right;">100.0%</span>
+      </div><div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--border);">
+        <span class="category-label cat-3pl" style="min-width:36px;text-align:center;">3PL</span>
+        <span style="flex:1;font-size:12px;font-family:'Noto Sans JP',sans-serif;">吉川紙商事</span>
+        <div style="width:100px;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
+          <div style="width:76%;height:100%;background:rgba(100,116,139,0.5);border-radius:4px 0 0 4px;display:inline-block;"></div><div style="width:24%;height:100%;background:var(--accent);border-radius:0 4px 4px 0;display:inline-block;"></div>
+        </div>
+        <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:hsl(28,60%,45%);min-width:42px;text-align:right;">23.5%</span>
+      </div><div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--border);">
+        <span class="category-label cat-saas" style="min-width:36px;text-align:center;">SaaS</span>
+        <span style="flex:1;font-size:12px;font-family:'Noto Sans JP',sans-serif;">KURAud</span>
+        <div style="width:100px;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
+          <div style="width:0%;height:100%;background:rgba(100,116,139,0.5);border-radius:4px 0 0 4px;display:inline-block;"></div><div style="width:100%;height:100%;background:var(--accent);border-radius:0 4px 4px 0;display:inline-block;"></div>
+        </div>
+        <span style="font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:hsl(120,60%,45%);min-width:42px;text-align:right;">100.0%</span>
+      </div><div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--border);">
+        <span class="category-label cat-3pl" style="min-width:36px;text-align:center;">3PL</span>
+        <span style="flex:1;font-size:12px;font-family:'Noto Sans JP',sans-serif;">ナチュラジャパン</span>
         <div style="width:100px;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
           <div style="width:0%;height:100%;background:rgba(100,116,139,0.5);border-radius:4px 0 0 4px;display:inline-block;"></div><div style="width:100%;height:100%;background:var(--accent);border-radius:0 4px 4px 0;display:inline-block;"></div>
         </div>
@@ -769,7 +815,7 @@
         <span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;">単位: 円</span>
       </div>
       <div class="chart-container" style="height:460px;">
-        <canvas id="deptGrossChart"></canvas>
+        <canvas id="deptGrossChart" style="box-sizing: border-box; display: block; height: 460px; width: 1302px;" width="2604" height="920"></canvas>
       </div>
     </div>
 
@@ -797,74 +843,74 @@
     </tr>
   </thead><tbody><tr>
         <td><span class="category-label cat-3pl">3PL</span>白銅</td>
-        <td class="num-primary">¥11,570,002</td>
-        <td class="num-delta"><span class="positive">▲9.7%</span></td>
-        <td class="num-primary">¥10,839,398</td>
-        <td class="num-delta"><span class="positive">▲12.8%</span></td>
-        <td class="num-total">¥22,409,400</td>
+        <td class="num-primary">¥11,200,000</td>
+        <td class="num-delta"><span class="positive">▲10.9%</span></td>
+        <td class="num-primary">¥0</td>
+        <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
+        <td class="num-total">¥11,200,000</td>
       </tr><tr>
         <td><span class="category-label cat-3pl">3PL</span>ムトウユニパック</td>
-        <td class="num-primary">¥1,138,075</td>
-        <td class="num-delta"><span class="negative">▼21.6%</span></td>
-        <td class="num-primary">¥1,399,830</td>
-        <td class="num-delta"><span class="negative">▼10.5%</span></td>
-        <td class="num-total">¥2,537,905</td>
+        <td class="num-primary">¥1,250,000</td>
+        <td class="num-delta"><span class="negative">▼9.4%</span></td>
+        <td class="num-primary">¥0</td>
+        <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
+        <td class="num-total">¥1,250,000</td>
       </tr><tr>
         <td><span class="category-label cat-3pl">3PL</span>化研マテリアル</td>
         <td class="num-primary">¥0</td>
         <td class="num-delta"><span class="negative">▼100.0%</span></td>
         <td class="num-primary">¥0</td>
-        <td class="num-delta"><span class="negative">▼100.0%</span></td>
+        <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
         <td class="num-total">¥0</td>
       </tr><tr>
         <td><span class="category-label cat-3pl">3PL</span>吉川紙商事</td>
-        <td class="num-primary">¥34,101</td>
-        <td class="num-delta"><span class="positive">▲44.5%</span></td>
-        <td class="num-primary">¥31,886</td>
-        <td class="num-delta"><span class="positive">▲40.5%</span></td>
-        <td class="num-total">¥65,987</td>
-      </tr><tr>
-        <td><span class="category-label cat-3pl">3PL</span>ナチュラジャパン</td>
-        <td class="num-primary">¥14,861</td>
-        <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
-        <td class="num-primary">¥16,429</td>
-        <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
-        <td class="num-total">¥31,290</td>
-      </tr><tr class="subtotal">
-      <td>3PL 小計</td>
-      <td class="num-primary">¥12,757,039</td>
-      <td class="num-delta"><span class="positive">▲4.6%</span></td>
-      <td class="num-primary">¥12,287,543</td>
-      <td class="num-delta"><span class="positive">▲8.6%</span></td>
-      <td class="num-total">¥25,044,582</td>
-    </tr><tr>
-        <td><span class="category-label cat-saas">SaaS</span>trackerr</td>
-        <td class="num-primary">¥1,113,200</td>
-        <td class="num-delta"><span class="positive">▲28.8%</span></td>
-        <td class="num-primary">¥1,140,000</td>
-        <td class="num-delta"><span class="negative">▼5.3%</span></td>
-        <td class="num-total">¥2,253,200</td>
-      </tr><tr>
-        <td><span class="category-label cat-saas">SaaS</span>配録</td>
-        <td class="num-primary">¥495,754</td>
-        <td class="num-delta"><span class="negative">▼61.2%</span></td>
-        <td class="num-primary">¥284,122</td>
-        <td class="num-delta"><span class="negative">▼45.8%</span></td>
-        <td class="num-total">¥779,876</td>
-      </tr><tr>
-        <td><span class="category-label cat-saas">SaaS</span>イツクルLOGI</td>
-        <td class="num-primary">¥150,000</td>
-        <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
-        <td class="num-primary">¥430,800</td>
-        <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
-        <td class="num-total">¥580,800</td>
-      </tr><tr>
-        <td><span class="category-label cat-saas">SaaS</span>KURAud</td>
+        <td class="num-primary">¥33,500</td>
+        <td class="num-delta"><span class="positive">▲59.5%</span></td>
         <td class="num-primary">¥0</td>
         <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
-        <td class="num-primary">¥97,000</td>
+        <td class="num-total">¥33,500</td>
+      </tr><tr>
+        <td><span class="category-label cat-3pl">3PL</span>ナチュラジャパン</td>
+        <td class="num-primary">¥18,000</td>
         <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
-        <td class="num-total">¥97,000</td>
+        <td class="num-primary">¥0</td>
+        <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
+        <td class="num-total">¥18,000</td>
+      </tr><tr class="subtotal">
+      <td>3PL 小計</td>
+      <td class="num-primary">¥12,501,500</td>
+      <td class="num-delta"><span class="positive">▲7.3%</span></td>
+      <td class="num-primary">¥0</td>
+      <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
+      <td class="num-total">¥12,501,500</td>
+    </tr><tr>
+        <td><span class="category-label cat-saas">SaaS</span>trackerr</td>
+        <td class="num-primary">¥1,250,000</td>
+        <td class="num-delta"><span class="positive">▲35.9%</span></td>
+        <td class="num-primary">¥0</td>
+        <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
+        <td class="num-total">¥1,250,000</td>
+      </tr><tr>
+        <td><span class="category-label cat-saas">SaaS</span>配録</td>
+        <td class="num-primary">¥320,000</td>
+        <td class="num-delta"><span class="negative">▼34.7%</span></td>
+        <td class="num-primary">¥0</td>
+        <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
+        <td class="num-total">¥320,000</td>
+      </tr><tr>
+        <td><span class="category-label cat-saas">SaaS</span>イツクルLOGI</td>
+        <td class="num-primary">¥480,000</td>
+        <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
+        <td class="num-primary">¥0</td>
+        <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
+        <td class="num-total">¥480,000</td>
+      </tr><tr>
+        <td><span class="category-label cat-saas">SaaS</span>KURAud</td>
+        <td class="num-primary">¥120,000</td>
+        <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
+        <td class="num-primary">¥0</td>
+        <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
+        <td class="num-total">¥120,000</td>
       </tr><tr>
         <td><span class="category-label cat-saas">SaaS</span>HaKoPo</td>
         <td class="num-primary">¥0</td>
@@ -874,46 +920,53 @@
         <td class="num-total">¥0</td>
       </tr><tr class="subtotal">
       <td>SaaS 小計</td>
-      <td class="num-primary">¥1,758,954</td>
-      <td class="num-delta"><span class="negative">▼17.8%</span></td>
-      <td class="num-primary">¥1,951,922</td>
-      <td class="num-delta"><span class="positive">▲13.0%</span></td>
-      <td class="num-total">¥3,710,876</td>
+      <td class="num-primary">¥2,170,000</td>
+      <td class="num-delta"><span class="positive">▲53.9%</span></td>
+      <td class="num-primary">¥0</td>
+      <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
+      <td class="num-total">¥2,170,000</td>
     </tr><tr>
         <td><span class="category-label cat-dev">DEV</span>受託開発</td>
-        <td class="num-primary">¥443,000</td>
-        <td class="num-delta"><span class="negative">▼85.9%</span></td>
-        <td class="num-primary">¥1,049,000</td>
-        <td class="num-delta"><span class="positive">▲360.1%</span></td>
-        <td class="num-total">¥1,492,000</td>
+        <td class="num-primary">¥0</td>
+        <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
+        <td class="num-primary">¥0</td>
+        <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
+        <td class="num-total">¥0</td>
+      </tr><tr>
+        <td><span class="category-label cat-dev">DEV</span>受託開発</td>
+        <td class="num-primary">¥1,800,000</td>
+        <td class="num-delta"><span class="positive">▲260.0%</span></td>
+        <td class="num-primary">¥0</td>
+        <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
+        <td class="num-total">¥1,800,000</td>
       </tr><tr class="subtotal">
       <td>受託開発 小計</td>
-      <td class="num-primary">¥443,000</td>
-      <td class="num-delta"><span class="negative">▼85.9%</span></td>
-      <td class="num-primary">¥1,049,000</td>
-      <td class="num-delta"><span class="positive">▲360.1%</span></td>
-      <td class="num-total">¥1,492,000</td>
+      <td class="num-primary">¥1,800,000</td>
+      <td class="num-delta"><span class="positive">▲260.0%</span></td>
+      <td class="num-primary">¥0</td>
+      <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
+      <td class="num-total">¥1,800,000</td>
     </tr><tr>
         <td><span class="category-label cat-cons">CONS</span>コンサルティング（青和向け）</td>
         <td class="num-primary">¥180,000</td>
         <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
-        <td class="num-primary">¥180,000</td>
+        <td class="num-primary">¥0</td>
         <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
-        <td class="num-total">¥360,000</td>
+        <td class="num-total">¥180,000</td>
       </tr><tr class="subtotal">
       <td>コンサルティング 小計</td>
       <td class="num-primary">¥180,000</td>
       <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
-      <td class="num-primary">¥180,000</td>
+      <td class="num-primary">¥0</td>
       <td class="num-delta"><span style="color:var(--text-muted)">—</span></td>
-      <td class="num-total">¥360,000</td>
+      <td class="num-total">¥180,000</td>
     </tr><tr class="total">
     <td>全部門 合計</td>
-    <td>¥15,138,993</td>
-    <td><span class="negative">▼13.3%</span></td>
-    <td>¥15,468,465</td>
-    <td><span class="positive">▲16.5%</span></td>
-    <td>¥30,607,458</td>
+    <td>¥16,651,500</td>
+    <td><span class="positive">▲22.8%</span></td>
+    <td>¥0</td>
+    <td><span style="color:var(--text-muted)">—</span></td>
+    <td>¥16,651,500</td>
   </tr></tbody></table></div>
       </div>
     </div>
@@ -944,92 +997,152 @@
     <th>原価余力</th><th>状態</th>
   </tr></thead><tbody><tr>
       <td><span class="category-label cat-3pl">3PL</span>白銅</td>
-      <td>¥102,437,572</td>
-      <td>¥80,028,172</td>
+      <td>¥99,450,000</td>
+      <td>¥78,008,000</td>
       <td>
         <div class="cost-bar-wrap">
-          <div class="cost-bar-track"><div class="cost-bar-fill" style="width:73%;background:var(--positive);"></div></div>
-          <span style="font-size:12px;font-weight:600;color:var(--positive);">21.9%</span>
+          <div class="cost-bar-track"><div class="cost-bar-fill" style="width:71%;background:var(--positive);"></div></div>
+          <span style="font-size:12px;font-weight:600;color:var(--positive);">21.4%</span>
         </div>
       </td>
-      <td>¥81,950,058</td>
+      <td>¥79,560,000</td>
       <td class="positive" style="font-weight:600;">
-        ＋¥1,921,886
+        ＋¥1,552,000
       </td>
       <td style="text-align:center;"><span class="cost-status status-warn">⚠️ 要注意</span></td>
     </tr><tr>
       <td><span class="category-label cat-3pl">3PL</span>ムトウユニパック</td>
-      <td>¥22,365,151</td>
-      <td>¥19,827,246</td>
+      <td>¥20,475,000</td>
+      <td>¥18,130,000</td>
       <td>
         <div class="cost-bar-wrap">
-          <div class="cost-bar-track"><div class="cost-bar-fill" style="width:38%;background:var(--negative);"></div></div>
-          <span style="font-size:12px;font-weight:600;color:var(--negative);">11.3%</span>
+          <div class="cost-bar-track"><div class="cost-bar-fill" style="width:43%;background:var(--negative);"></div></div>
+          <span style="font-size:12px;font-weight:600;color:var(--negative);">12.8%</span>
         </div>
       </td>
-      <td>¥17,892,121</td>
+      <td>¥16,380,000</td>
       <td class="negative" style="font-weight:600;">
-        －¥1,935,125
+        －¥1,750,000
       </td>
       <td style="text-align:center;"><span class="cost-status status-ng">🔴 目標超過</span></td>
     </tr><tr>
-      <td><span class="category-label cat-dev">DEV</span>受託開発</td>
-      <td>¥4,168,000</td>
-      <td>¥2,676,000</td>
+      <td><span class="category-label ">ソフトウェア</span>受託開発</td>
+      <td>¥9,750,000</td>
+      <td>¥6,272,000</td>
       <td>
         <div class="cost-bar-wrap">
-          <div class="cost-bar-track"><div class="cost-bar-fill" style="width:100%;background:var(--positive);"></div></div>
-          <span style="font-size:12px;font-weight:600;color:var(--positive);">35.8%</span>
+          <div class="cost-bar-track"><div class="cost-bar-fill" style="width:79%;background:var(--positive);"></div></div>
+          <span style="font-size:12px;font-weight:600;color:var(--positive);">23.6%</span>
         </div>
       </td>
-      <td>¥3,334,400</td>
+      <td>¥7,800,000</td>
       <td class="positive" style="font-weight:600;">
-        ＋¥658,400
-      </td>
-      <td style="text-align:center;"><span class="cost-status status-ok">✅ 余裕あり</span></td>
-    </tr><tr>
-      <td><span class="category-label cat-saas">SaaS</span>配録</td>
-      <td>¥2,541,400</td>
-      <td>¥1,761,524</td>
-      <td>
-        <div class="cost-bar-wrap">
-          <div class="cost-bar-track"><div class="cost-bar-fill" style="width:100%;background:var(--positive);"></div></div>
-          <span style="font-size:12px;font-weight:600;color:var(--positive);">30.7%</span>
-        </div>
-      </td>
-      <td>¥2,033,120</td>
-      <td class="positive" style="font-weight:600;">
-        ＋¥271,596
+        ＋¥1,528,000
       </td>
       <td style="text-align:center;"><span class="cost-status status-ok">✅ 余裕あり</span></td>
     </tr><tr>
       <td><span class="category-label cat-saas">SaaS</span>trackerr</td>
-      <td>¥2,253,200</td>
+      <td>¥2,437,500</td>
       <td>¥0</td>
       <td>
         <div class="cost-bar-wrap">
           <div class="cost-bar-track"><div class="cost-bar-fill" style="width:100%;background:var(--positive);"></div></div>
-          <span style="font-size:12px;font-weight:600;color:var(--positive);">100.0%</span>
+          <span style="font-size:12px;font-weight:600;color:var(--positive);">89.0%</span>
         </div>
       </td>
-      <td>¥1,802,560</td>
+      <td>¥1,950,000</td>
       <td class="positive" style="font-weight:600;">
-        ＋¥1,802,560
+        ＋¥1,950,000
+      </td>
+      <td style="text-align:center;"><span class="cost-status status-ok">✅ 余裕あり</span></td>
+    </tr><tr>
+      <td><span class="category-label cat-saas">SaaS</span>配録</td>
+      <td>¥1,872,000</td>
+      <td>¥1,254,400</td>
+      <td>
+        <div class="cost-bar-wrap">
+          <div class="cost-bar-track"><div class="cost-bar-fill" style="width:100%;background:var(--positive);"></div></div>
+          <span style="font-size:12px;font-weight:600;color:var(--positive);">43.3%</span>
+        </div>
+      </td>
+      <td>¥1,497,600</td>
+      <td class="positive" style="font-weight:600;">
+        ＋¥243,200
+      </td>
+      <td style="text-align:center;"><span class="cost-status status-ok">✅ 余裕あり</span></td>
+    </tr><tr>
+      <td><span class="category-label cat-saas">SaaS</span>イツクルLOGI</td>
+      <td>¥936,000</td>
+      <td>¥0</td>
+      <td>
+        <div class="cost-bar-wrap">
+          <div class="cost-bar-track"><div class="cost-bar-fill" style="width:100%;background:var(--positive);"></div></div>
+          <span style="font-size:12px;font-weight:600;color:var(--positive);">51.3%</span>
+        </div>
+      </td>
+      <td>¥748,800</td>
+      <td class="positive" style="font-weight:600;">
+        ＋¥748,800
       </td>
       <td style="text-align:center;"><span class="cost-status status-ok">✅ 余裕あり</span></td>
     </tr><tr>
       <td><span class="category-label cat-cons">CONS</span>コンサルティング（青和向け）</td>
-      <td>¥360,000</td>
+      <td>¥351,000</td>
       <td>¥0</td>
       <td>
         <div class="cost-bar-wrap">
           <div class="cost-bar-track"><div class="cost-bar-fill" style="width:100%;background:var(--positive);"></div></div>
-          <span style="font-size:12px;font-weight:600;color:var(--positive);">100.0%</span>
+          <span style="font-size:12px;font-weight:600;color:var(--positive);">51.3%</span>
         </div>
       </td>
-      <td>¥288,000</td>
+      <td>¥280,800</td>
       <td class="positive" style="font-weight:600;">
-        ＋¥288,000
+        ＋¥280,800
+      </td>
+      <td style="text-align:center;"><span class="cost-status status-ok">✅ 余裕あり</span></td>
+    </tr><tr>
+      <td><span class="category-label cat-3pl">3PL</span>吉川紙商事</td>
+      <td>¥273,000</td>
+      <td>¥208,740</td>
+      <td>
+        <div class="cost-bar-wrap">
+          <div class="cost-bar-track"><div class="cost-bar-fill" style="width:67%;background:var(--positive);"></div></div>
+          <span style="font-size:12px;font-weight:600;color:var(--positive);">20.0%</span>
+        </div>
+      </td>
+      <td>¥218,400</td>
+      <td class="positive" style="font-weight:600;">
+        ＋¥9,660
+      </td>
+      <td style="text-align:center;"><span class="cost-status status-ok">✅ 余裕あり</span></td>
+    </tr><tr>
+      <td><span class="category-label cat-saas">SaaS</span>KURAud</td>
+      <td>¥234,000</td>
+      <td>¥0</td>
+      <td>
+        <div class="cost-bar-wrap">
+          <div class="cost-bar-track"><div class="cost-bar-fill" style="width:100%;background:var(--positive);"></div></div>
+          <span style="font-size:12px;font-weight:600;color:var(--positive);">51.3%</span>
+        </div>
+      </td>
+      <td>¥187,200</td>
+      <td class="positive" style="font-weight:600;">
+        ＋¥187,200
+      </td>
+      <td style="text-align:center;"><span class="cost-status status-ok">✅ 余裕あり</span></td>
+    </tr><tr>
+      <td><span class="category-label cat-3pl">3PL</span>ナチュラジャパン</td>
+      <td>¥35,100</td>
+      <td>¥0</td>
+      <td>
+        <div class="cost-bar-wrap">
+          <div class="cost-bar-track"><div class="cost-bar-fill" style="width:100%;background:var(--positive);"></div></div>
+          <span style="font-size:12px;font-weight:600;color:var(--positive);">51.3%</span>
+        </div>
+      </td>
+      <td>¥28,080</td>
+      <td class="positive" style="font-weight:600;">
+        ＋¥28,080
       </td>
       <td style="text-align:center;"><span class="cost-status status-ok">✅ 余裕あり</span></td>
     </tr></tbody></table></div></div>
@@ -1047,50 +1160,50 @@
       <div class="commission-name">🏠 大家さん コミッション（上半期粗利 前年増分 × 13%）</div>
       <div class="commission-row">
         <span class="commission-row-label">Q1 粗利（今期）</span>
-        <span class="commission-row-value">¥15,138,993</span>
+        <span class="commission-row-value">¥16,651,500</span>
       </div>
       <div class="commission-row">
         <span class="commission-row-label">Q2 粗利（今期）</span>
-        <span class="commission-row-value">¥15,468,465</span>
+        <span class="commission-row-value">¥0</span>
       </div>
       <div class="commission-row">
         <span class="commission-row-label">上半期合計（今期）</span>
-        <span class="commission-row-value">¥30,607,458</span>
+        <span class="commission-row-value">¥16,651,500</span>
       </div>
       <div class="commission-row">
         <span class="commission-row-label">上半期合計（前年）</span>
-        <span class="commission-row-value" style="color:var(--text-muted)">¥30,741,383</span>
+        <span class="commission-row-value" style="color:var(--text-muted)">¥13,556,000</span>
       </div>
       <div class="commission-row">
         <span class="commission-row-label">前年増分（H1合計）</span>
-        <span class="commission-row-value negative">-133,925</span>
+        <span class="commission-row-value positive">+3,095,500</span>
       </div>
       <div class="commission-row" style="margin-top:4px;border-top:2px solid var(--border);padding-top:10px">
         <span class="commission-row-label" style="font-weight:600;color:var(--text)">コミッション合計</span>
-        <span class="commission-row-value" style="font-size:16px;font-weight:700;color:var(--accent)">¥0</span>
+        <span class="commission-row-value" style="font-size:16px;font-weight:700;color:var(--accent)">¥402,415</span>
       </div>
     </div>
     <div class="commission-card">
       <div class="commission-name">👤 佐々木さん コミッション（粗利合計 × 1%）</div>
       <div class="commission-row">
         <span class="commission-row-label">Q1 粗利合計</span>
-        <span class="commission-row-value">¥15,138,993</span>
+        <span class="commission-row-value">¥16,651,500</span>
       </div>
       <div class="commission-row">
         <span class="commission-row-label">Q1 コミッション</span>
-        <span class="commission-row-value">¥151,390</span>
+        <span class="commission-row-value">¥166,515</span>
       </div>
       <div class="commission-row">
         <span class="commission-row-label">Q2 粗利合計</span>
-        <span class="commission-row-value">¥15,468,465</span>
+        <span class="commission-row-value">¥0</span>
       </div>
       <div class="commission-row">
         <span class="commission-row-label">Q2 コミッション</span>
-        <span class="commission-row-value">¥154,685</span>
+        <span class="commission-row-value">¥0</span>
       </div>
       <div class="commission-row" style="margin-top:4px;border-top:2px solid var(--border);padding-top:10px">
         <span class="commission-row-label" style="font-weight:600;color:var(--text)">コミッション合計</span>
-        <span class="commission-row-value" style="font-size:16px;font-weight:700;color:var(--accent)">¥306,075</span>
+        <span class="commission-row-value" style="font-size:16px;font-weight:700;color:var(--accent)">¥166,515</span>
       </div>
     </div>
   </div>
@@ -1100,7 +1213,7 @@
 
 <footer>
   <div class="container">
-    <span id="footerText">最終更新: 2025年3月 | データソース: 粗利分析xlsx</span>
+    <span id="footerText">最終更新: 2026/4/23 | データソース: 粗利分析xlsx</span>
   </div>
 </footer>
 
@@ -1114,10 +1227,10 @@
       <div class="drop-text" id="dropText">クリックまたはドラッグ&amp;ドロップ<br><span style="font-size:11px;color:#475569;">粗利分析_YYYYMM_*.xlsx</span></div>
     </div>
     <input type="file" id="fileInput" accept=".xlsx" style="display:none" onchange="handleFile(this.files[0])">
-    <div class="status-msg" id="statusMsg"></div>
+    <div class="status-msg success" id="statusMsg" style="display: none;">✅ データを更新しました！</div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">キャンセル</button>
-      <button class="btn-process" id="btnProcess" onclick="processFile()">更新する</button>
+      <button class="btn-process" id="btnProcess" onclick="processFile()" style="display: none;">更新する</button>
     </div>
   </div>
 </div>
@@ -1127,7 +1240,7 @@
 // =============================================
 // EMBEDDED DEFAULT DATA (2025年度 Q1・Q2)
 // =============================================
-const DEFAULT_DATA = {"period":"2025 Q1・Q2","updatedAt":"2025年3月","summary":[{"dept":"白銅","category":"3PL","q1_2025":11570002,"q1_2024":10550926,"q2_2025":10839398,"q2_2024":9607984},{"dept":"ムトウユニパック","category":"3PL","q1_2025":1138075,"q1_2024":1451712,"q2_2025":1399830,"q2_2024":1564289},{"dept":"化研マテリアル","category":"3PL","q1_2025":0,"q1_2024":167269,"q2_2025":0,"q2_2024":123849},{"dept":"吉川紙商事","category":"3PL","q1_2025":34101,"q1_2024":23594,"q2_2025":31886,"q2_2024":22700},{"dept":"ナチュラジャパン","category":"3PL","q1_2025":14861,"q1_2024":0,"q2_2025":16429,"q2_2024":0},{"dept":"trackerr","category":"SaaS","q1_2025":1113200,"q1_2024":864600,"q2_2025":1140000,"q2_2024":1203600},{"dept":"配録","category":"SaaS","q1_2025":495754,"q1_2024":1276460,"q2_2025":284122,"q2_2024":524400},{"dept":"イツクルLOGI","category":"SaaS","q1_2025":150000,"q1_2024":0,"q2_2025":430800,"q2_2024":0},{"dept":"KURAud","category":"SaaS","q1_2025":0,"q1_2024":0,"q2_2025":97000,"q2_2024":0},{"dept":"HaKoPo","category":"SaaS","q1_2025":0,"q1_2024":0,"q2_2025":0,"q2_2024":0},{"dept":"受託開発","category":"受託開発","q1_2025":443000,"q1_2024":3132000,"q2_2025":1049000,"q2_2024":228000},{"dept":"コンサルティング（青和向け）","category":"コンサルティング","q1_2025":180000,"q1_2024":0,"q2_2025":180000,"q2_2024":0}],"detail":[{"category":"3PL","dept":"白銅","period":"2025 Q1","revenue":51838777,"cost":40268775,"gross":11570002,"margin":0.2232,"prev":10550926},{"category":"3PL","dept":"白銅","period":"2025 Q2","revenue":50598795,"cost":39759397,"gross":10839398,"margin":0.2142,"prev":9607984},{"category":"3PL","dept":"ムトウユニパック","period":"2025 Q1","revenue":9942890,"cost":8804815,"gross":1138075,"margin":0.1145,"prev":1451712},{"category":"3PL","dept":"ムトウユニパック","period":"2025 Q2","revenue":12422261,"cost":11022431,"gross":1399830,"margin":0.1127,"prev":1564289},{"category":"SaaS","dept":"trackerr","period":"2025 Q1","revenue":1113200,"cost":0,"gross":1113200,"margin":1,"prev":864600},{"category":"SaaS","dept":"trackerr","period":"2025 Q2","revenue":1140000,"cost":0,"gross":1140000,"margin":1,"prev":1203600},{"category":"SaaS","dept":"配録","period":"2025 Q1","revenue":1397400,"cost":901646,"gross":495754,"margin":0.3548,"prev":1276460},{"category":"SaaS","dept":"配録","period":"2025 Q2","revenue":1144000,"cost":859878,"gross":284122,"margin":0.2484,"prev":524400},{"category":"受託開発","dept":"受託開発","period":"2025 Q1","revenue":1547000,"cost":1104000,"gross":443000,"margin":0.2864,"prev":3132000},{"category":"受託開発","dept":"受託開発","period":"2025 Q2","revenue":2621000,"cost":1572000,"gross":1049000,"margin":0.4002,"prev":228000},{"category":"コンサルティング","dept":"コンサルティング（青和向け）","period":"2025 Q1","revenue":180000,"cost":0,"gross":180000,"margin":1,"prev":0},{"category":"コンサルティング","dept":"コンサルティング（青和向け）","period":"2025 Q2","revenue":180000,"cost":0,"gross":180000,"margin":1,"prev":0}],"commission":{"q1_gross_current":15138993,"q2_gross_current":15468465,"q1_gross_prev":17466561,"q2_gross_prev":13274822,"ooya_rate":0.13,"sasaki_rate":0.01}};
+const DEFAULT_DATA = {"period":"2025 Q1・Q2","updatedAt":"2026/4/23","summary":[{"dept":"白銅","category":"3PL","q1_2025":11200000,"q1_2024":10100000,"q2_2025":0,"q2_2024":0},{"dept":"ムトウユニパック","category":"3PL","q1_2025":1250000,"q1_2024":1380000,"q2_2025":0,"q2_2024":0},{"dept":"化研マテリアル","category":"3PL","q1_2025":0,"q1_2024":145000,"q2_2025":0,"q2_2024":0},{"dept":"吉川紙商事","category":"3PL","q1_2025":33500,"q1_2024":21000,"q2_2025":0,"q2_2024":0},{"dept":"ナチュラジャパン","category":"3PL","q1_2025":18000,"q1_2024":0,"q2_2025":0,"q2_2024":0},{"dept":"trackerr","category":"SaaS","q1_2025":1250000,"q1_2024":920000,"q2_2025":0,"q2_2024":0},{"dept":"配録","category":"SaaS","q1_2025":320000,"q1_2024":490000,"q2_2025":0,"q2_2024":0},{"dept":"イツクルLOGI","category":"SaaS","q1_2025":480000,"q1_2024":0,"q2_2025":0,"q2_2024":0},{"dept":"KURAud","category":"SaaS","q1_2025":120000,"q1_2024":0,"q2_2025":0,"q2_2024":0},{"dept":"HaKoPo","category":"SaaS","q1_2025":0,"q1_2024":0,"q2_2025":0,"q2_2024":0},{"dept":"受託開発","category":"受託開発","q1_2025":0,"q1_2024":0,"q2_2025":0,"q2_2024":0},{"dept":"受託開発","category":"受託開発","q1_2025":1800000,"q1_2024":500000,"q2_2025":0,"q2_2024":0},{"dept":"コンサルティング（青和向け）","category":"コンサルティング","q1_2025":180000,"q1_2024":0,"q2_2025":0,"q2_2024":0}],"detail":[{"category":"3PL","dept":"白銅","period":"2025 Q3","revenue":51000000,"cost":39800000,"gross":11200000,"margin":0.2196078431372549,"prev":10100000},{"category":"3PL","dept":"白銅","period":"2024 Q3","revenue":48450000,"cost":38208000,"gross":10100000,"margin":0.2084623323013416,"prev":0},{"category":"3PL","dept":"ムトウユニパック","period":"2025 Q3","revenue":10500000,"cost":9250000,"gross":1250000,"margin":0.11904761904761904,"prev":1380000},{"category":"3PL","dept":"ムトウユニパック","period":"2024 Q3","revenue":9975000,"cost":8880000,"gross":1380000,"margin":0.13834586466165413,"prev":0},{"category":"3PL","dept":"化研マテリアル","period":"2025 Q3","revenue":0,"cost":0,"gross":0,"margin":1,"prev":145000},{"category":"3PL","dept":"化研マテリアル","period":"2024 Q3","revenue":0,"cost":0,"gross":145000,"margin":1,"prev":0},{"category":"3PL","dept":"吉川紙商事","period":"2025 Q3","revenue":140000,"cost":106500,"gross":33500,"margin":0.2392857142857143,"prev":21000},{"category":"3PL","dept":"吉川紙商事","period":"2024 Q3","revenue":133000,"cost":102240,"gross":21000,"margin":0.15789473684210525,"prev":0},{"category":"3PL","dept":"ナチュラジャパン","period":"2025 Q3","revenue":18000,"cost":0,"gross":18000,"margin":1,"prev":0},{"category":"3PL","dept":"ナチュラジャパン","period":"2024 Q3","revenue":17100,"cost":0,"gross":0,"margin":1,"prev":0},{"category":"SaaS","dept":"trackerr","period":"2025 Q3","revenue":1250000,"cost":0,"gross":1250000,"margin":1,"prev":920000},{"category":"SaaS","dept":"trackerr","period":"2024 Q3","revenue":1187500,"cost":0,"gross":920000,"margin":1,"prev":0},{"category":"SaaS","dept":"配録","period":"2025 Q3","revenue":960000,"cost":640000,"gross":320000,"margin":0.3333333333333333,"prev":490000},{"category":"SaaS","dept":"配録","period":"2024 Q3","revenue":912000,"cost":614400,"gross":490000,"margin":0.5372807017543859,"prev":0},{"category":"SaaS","dept":"イツクルLOGI","period":"2025 Q3","revenue":480000,"cost":0,"gross":480000,"margin":1,"prev":0},{"category":"SaaS","dept":"イツクルLOGI","period":"2024 Q3","revenue":456000,"cost":0,"gross":0,"margin":1,"prev":0},{"category":"SaaS","dept":"KURAud","period":"2025 Q3","revenue":120000,"cost":0,"gross":120000,"margin":1,"prev":0},{"category":"SaaS","dept":"KURAud","period":"2024 Q3","revenue":114000,"cost":0,"gross":0,"margin":1,"prev":0},{"category":"SaaS","dept":"HaKoPo","period":"2025 Q3","revenue":0,"cost":0,"gross":0,"margin":1,"prev":0},{"category":"SaaS","dept":"HaKoPo","period":"2024 Q3","revenue":0,"cost":0,"gross":0,"margin":1,"prev":0},{"category":"ソフトウェア","dept":"受託開発","period":"2025 Q3","revenue":5000000,"cost":3200000,"gross":1800000,"margin":0.36,"prev":500000},{"category":"ソフトウェア","dept":"受託開発","period":"2024 Q3","revenue":4750000,"cost":3072000,"gross":500000,"margin":0.10526315789473684,"prev":0},{"category":"コンサルティング","dept":"コンサルティング（青和向け）","period":"2025 Q3","revenue":180000,"cost":0,"gross":180000,"margin":1,"prev":0},{"category":"コンサルティング","dept":"コンサルティング（青和向け）","period":"2024 Q3","revenue":171000,"cost":0,"gross":0,"margin":1,"prev":0}],"commission":{"q1_gross_current":16651500,"q2_gross_current":0,"q1_gross_prev":13556000,"q2_gross_prev":0,"ooya_rate":0.13,"sasaki_rate":0.01}};
 
 // =============================================
 // STATE
