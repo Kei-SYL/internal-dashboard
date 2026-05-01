@@ -223,21 +223,6 @@
       <div class="chart-container" style="height:300px;"><canvas id="cascadeChart"></canvas></div>
     </div>
 
-    <!-- 2-Year Revenue Trend -->
-    <div class="section-header">
-      <span class="section-title" id="trendTitle">売上推移　直近2年（月次）</span>
-      <div class="section-line"></div>
-    </div>
-    <div class="charts-grid" style="margin-bottom:32px;">
-      <div class="card chart-wide">
-        <div class="card-title">
-          <span>月次 売上推移（前年同月比較）</span>
-          <span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;">棒＝売上　折れ線＝粗利率</span>
-        </div>
-        <div class="chart-container tall"><canvas id="trendChart"></canvas></div>
-      </div>
-    </div>
-
     <!-- Monthly Trend (P&L breakdown) -->
     <div class="section-header">
       <span class="section-title" id="monthlyTitle">月次 損益推移</span>
@@ -628,130 +613,18 @@ function renderCascade(data) {
 // =============================================
 function renderCharts(data) {
   // cascade は renderCascade が個別管理するので触らない
-  ['trend','monthly','seg','yearly','sga'].forEach(k => {
+  ['monthly','seg','yearly','sga'].forEach(k => {
     if (charts[k]) { charts[k].destroy(); delete charts[k]; }
   });
 
   const months = data.monthly.map(m => m.month);
 
-  // ── 直近2年 売上推移チャート（連続12ヶ月） ──
-  const n = data.monthly.length;
-  const fy = parseInt(data.year) || 2025;
-
-  // 月番号取得
-  const mNum = str => parseInt(str.replace('月', ''));
-  // 実暦年: 10月以降は当該年度年、1〜9月は翌年
-  const calYear = (fiscalYr, monthStr) => mNum(monthStr) >= 10 ? fiscalYr : fiscalYr + 1;
-
-  // ラベル: '24/10', '24/11', ... '25/3', '25/10', ... '26/3'
-  const trendLabels = [
-    ...data.monthly.map(m => `${String(calYear(fy-1, m.month)).slice(2)}/${mNum(m.month)}`),
-    ...data.monthly.map(m => `${String(calYear(fy,   m.month)).slice(2)}/${mNum(m.month)}`),
-  ];
-
-  const trendRevAll = [
-    ...data.monthly.map(m => m.prev_rev || 0),
-    ...data.monthly.map(m => m.revenue),
-  ];
-  const trendBarColors = [
-    ...data.monthly.map(() => 'rgba(148,163,184,0.50)'),
-    ...data.monthly.map(() => 'rgba(15,76,117,0.70)'),
-  ];
-  const trendBarBorder = [
-    ...data.monthly.map(() => 'rgba(148,163,184,0.85)'),
-    ...data.monthly.map(() => 'rgba(15,76,117,1)'),
-  ];
-
-  // 粗利率ライン: 1本で全12ヶ月連続
-  const grLineAll = [
-    ...data.monthly.map(m => m.prev_rev  > 0 ? (m.prev_gross||0)/m.prev_rev*100  : null),
-    ...data.monthly.map(m => m.revenue   > 0 ? m.gross/m.revenue*100              : null),
-  ];
-  // 前年/今期の境界で色を分けるセグメント色 plugin
-  const trendSegColors = {
-    id: 'trendSegColors',
-    beforeDatasetsDraw(chart) {
-      const { ctx, chartArea, scales: { x } } = chart;
-      if (!chartArea) return;
-      const boundX = (x.getPixelForValue(n - 0.5) + x.getPixelForValue(n + 0.5)) / 2;
-      // 前年エリア: 薄グレー背景
-      ctx.save();
-      ctx.fillStyle = 'rgba(0,0,0,0.02)';
-      ctx.fillRect(chartArea.left, chartArea.top, boundX - chartArea.left, chartArea.height);
-      // 境界線
-      ctx.strokeStyle = 'rgba(15,76,117,0.2)';
-      ctx.lineWidth = 1;
-      ctx.setLineDash([4,3]);
-      ctx.beginPath(); ctx.moveTo(boundX, chartArea.top); ctx.lineTo(boundX, chartArea.bottom); ctx.stroke();
-      ctx.setLineDash([]);
-      // 年ラベル
-      ctx.font = '500 11px "Noto Sans JP",sans-serif';
-      ctx.fillStyle = 'rgba(100,116,139,0.6)';
-      ctx.textAlign = 'center';
-      ctx.fillText(`${fy-1}年度`, (chartArea.left + boundX) / 2, chartArea.top + 14);
-      ctx.fillStyle = 'rgba(15,76,117,0.55)';
-      ctx.fillText(`${fy}年度`, (boundX + chartArea.right) / 2, chartArea.top + 14);
-      ctx.restore();
-    }
-  };
-
-  charts.trend = new Chart(document.getElementById('trendChart'), {
-    type: 'bar',
-    plugins: [trendSegColors],
-    data: {
-      labels: trendLabels,
-      datasets: [
-        {
-          label: '売上',
-          data: trendRevAll,
-          backgroundColor: trendBarColors,
-          borderColor: trendBarBorder,
-          borderWidth: 1,
-          borderRadius: 3,
-        },
-        {
-          label: '粗利率',
-          data: grLineAll, type:'line', yAxisID:'yR',
-          borderColor:'#0d9488', backgroundColor:'transparent',
-          borderWidth:2.5, pointRadius:4, tension:0.3,
-          spanGaps: true,
-          segment: {
-            borderColor: ctx => ctx.p0DataIndex < n ? 'rgba(100,116,139,0.75)' : '#0d9488',
-            borderDash:  ctx => ctx.p0DataIndex < n ? [5,4] : [],
-          },
-        },
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      layout: { padding: { top: 20 } },
-      plugins: {
-        legend:{ position:'top', labels:{ font:{size:11}, boxWidth:12, padding:16 } },
-        tooltip:{ callbacks:{ label: ctx => {
-          if (ctx.dataset.yAxisID === 'yR') return ` 粗利率: ${ctx.parsed.y != null ? ctx.parsed.y.toFixed(1)+'%' : '—'}`;
-          const isCurrentYear = ctx.dataIndex >= n;
-          const m = data.monthly[ctx.dataIndex % n];
-          const prev_rev = m.prev_rev || 0;
-          const yoy = prev_rev > 0 ? ((m.revenue - prev_rev)/prev_rev*100).toFixed(1) : null;
-          if (isCurrentYear && yoy !== null) {
-            return ` 売上: ¥${fmt(ctx.parsed.y)}  前年比 ${parseFloat(yoy) >= 0 ? '+' : ''}${yoy}%`;
-          }
-          return ` 売上: ¥${fmt(ctx.parsed.y)}`;
-        }}}
-      },
-      scales: {
-        x:{ grid:{ display:false }, ticks:{ font:{size:11} } },
-        y:{ ticks:{ callback:v => '¥'+fmtM(v), font:{size:11} }, grid:{ color:'rgba(0,0,0,0.05)' } },
-        yR:{ position:'right', grid:{ display:false }, ticks:{ callback:v => v+'%', font:{size:11} }, min:0, max:50 }
-      }
-    }
-  });
-
-  // Monthly P&L Chart
-  const revData   = data.monthly.map(m => m.revenue);
-  const cogsData  = data.monthly.map(m => m.cogs);
-  const sgaData   = data.monthly.map(m => m.sga);
-  const opData    = data.monthly.map(m => m.op);
+  // Monthly P&L Chart（前年売上ラインを追加）
+  const revData    = data.monthly.map(m => m.revenue);
+  const cogsData   = data.monthly.map(m => m.cogs);
+  const sgaData    = data.monthly.map(m => m.sga);
+  const opData     = data.monthly.map(m => m.op);
+  const prevRevData= data.monthly.map(m => m.prev_rev || null);
   const grRateData = data.monthly.map(m => m.revenue > 0 ? (m.gross/m.revenue*100) : 0);
   const opRateData = data.monthly.map(m => m.revenue > 0 ? (m.op/m.revenue*100) : 0);
 
@@ -760,12 +633,17 @@ function renderCharts(data) {
     data: {
       labels: months,
       datasets: [
-        { label:'売上原価', data:cogsData, backgroundColor:'rgba(148,163,184,0.5)', stack:'s' },
-        { label:'販管費',   data:sgaData,  backgroundColor:'rgba(96,165,250,0.45)', stack:'s' },
-        { label:'営業利益', data:opData.map(v => v >= 0 ? v : 0), backgroundColor:'rgba(5,150,105,0.7)', stack:'s' },
-        { label:'営業損失', data:opData.map(v => v <  0 ? v : 0), backgroundColor:'rgba(220,38,38,0.6)',  stack:'s' },
-        { label:'粗利率',      data:grRateData, type:'line', yAxisID:'yR', borderColor:'#0d9488', backgroundColor:'transparent', borderWidth:2, pointRadius:4, tension:0.3 },
-        { label:'営業利益率',  data:opRateData, type:'line', yAxisID:'yR', borderColor:'#d97706', backgroundColor:'transparent', borderWidth:2, pointRadius:4, tension:0.3, borderDash:[4,3] },
+        { label:'売上原価',   data:cogsData, backgroundColor:'rgba(148,163,184,0.5)', stack:'s' },
+        { label:'販管費',     data:sgaData,  backgroundColor:'rgba(96,165,250,0.45)', stack:'s' },
+        { label:'営業利益',   data:opData.map(v => v >= 0 ? v : 0), backgroundColor:'rgba(5,150,105,0.7)', stack:'s' },
+        { label:'営業損失',   data:opData.map(v => v <  0 ? v : 0), backgroundColor:'rgba(220,38,38,0.6)', stack:'s' },
+        { label:'前年売上',   data:prevRevData, type:'line', yAxisID:'y',
+          borderColor:'rgba(148,163,184,0.75)', backgroundColor:'transparent',
+          borderWidth:2, pointRadius:4, tension:0.3, borderDash:[5,4], stack:undefined },
+        { label:'粗利率',     data:grRateData, type:'line', yAxisID:'yR',
+          borderColor:'#0d9488', backgroundColor:'transparent', borderWidth:2, pointRadius:4, tension:0.3 },
+        { label:'営業利益率', data:opRateData, type:'line', yAxisID:'yR',
+          borderColor:'#d97706', backgroundColor:'transparent', borderWidth:2, pointRadius:4, tension:0.3, borderDash:[4,3] },
       ]
     },
     options: {
@@ -774,12 +652,17 @@ function renderCharts(data) {
         legend:{ position:'top', labels:{ font:{size:11}, boxWidth:12, padding:16 } },
         tooltip:{ callbacks:{ label: ctx => {
           if (ctx.dataset.yAxisID === 'yR') return ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%`;
+          if (ctx.dataset.label === '前年売上') {
+            const m = data.monthly[ctx.dataIndex];
+            const yoy = m.prev_rev > 0 ? ((m.revenue - m.prev_rev)/m.prev_rev*100).toFixed(1) : null;
+            return ` 前年売上: ¥${fmt(ctx.parsed.y)}${yoy !== null ? `  (今期比 ${parseFloat(yoy)>=0?'+':''}${yoy}%)` : ''}`;
+          }
           return ` ${ctx.dataset.label}: ¥${fmt(ctx.parsed.y)}`;
         }}}
       },
       scales: {
         x:{ stacked:true, grid:{display:false} },
-        y:{ stacked:true, ticks:{ callback:v => '¥'+fmtM(v), font:{size:11} }, grid:{color:'rgba(0,0,0,0.05)' } },
+        y:{ stacked:true, ticks:{ callback:v => '¥'+fmtM(v), font:{size:11} }, grid:{color:'rgba(0,0,0,0.05)'} },
         yR:{ position:'right', grid:{display:false}, ticks:{ callback:v => v+'%', font:{size:11} }, min:-5 }
       }
     }
@@ -980,7 +863,6 @@ function renderAll(data) {
   document.getElementById('periodBadge').textContent = data.period;
   document.getElementById('footerText').textContent = `最終更新: ${data.updatedAt} | データソース: 事業別収支実績xlsx`;
   document.getElementById('cascadeSectionTitle').textContent = `損益ウォーターフォール　${data.period}`;
-  document.getElementById('trendTitle').textContent = `売上推移　直近2年（月次）`;
   document.getElementById('monthlyTitle').textContent = `月次 損益推移　${data.period}`;
   document.getElementById('segTitle').textContent = `事業別 収益構成　${data.period}`;
   document.getElementById('sgaTitle').textContent = `販管費 内訳　${data.period}`;
