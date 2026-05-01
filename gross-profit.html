@@ -1288,8 +1288,26 @@ function renderKPI(data) {
   const yr  = data.year    || '2025';
   const periodLbl = q2L ? `${q1L}・${q2L}` : q1L;
 
+  // 売上合計・粗利率（detailから算出）
+  const revByPeriod = (data.detail || []).reduce((acc, r) => {
+    acc[r.period] = (acc[r.period] || 0) + (r.revenue || 0);
+    return acc;
+  }, {});
+  const rev_q1 = revByPeriod[`${yr} ${q1L}`] || 0;
+  const rev_q2 = q2L ? (revByPeriod[`${yr} ${q2L}`] || 0) : 0;
+  const rev_total = rev_q1 + (q2L ? rev_q2 : 0);
+  const margin_total = rev_total > 0 ? (h1_2025 / rev_total * 100).toFixed(1) + '%' : '—';
+  const margin_q2    = rev_q2   > 0 ? (q2_2025  / rev_q2   * 100).toFixed(1) + '%' : '—';
+  const margin_q1    = rev_q1   > 0 ? (q1_2025  / rev_q1   * 100).toFixed(1) + '%' : '—';
+
   const kpis = q2L ? [
-    // 2期分ある場合：合計 + Q2（直近）+ Q1 + 増減率
+    // 2期分ある場合：売上+粗利率 → 粗利合計 → Q2 → Q1 → 増減率
+    {
+      label: `${periodLbl} 売上合計 (${yr})`,
+      value: '¥' + fmt(rev_total),
+      sub: `粗利率 <strong>${margin_total}</strong>`,
+      color: 'blue'
+    },
     {
       label: `${periodLbl} 粗利合計 (${yr})`,
       value: '¥' + fmt(h1_2025),
@@ -1299,14 +1317,14 @@ function renderKPI(data) {
     {
       label: `${q2L} 粗利合計 (${yr})`,
       value: '¥' + fmt(q2_2025),
-      sub: `前年同期比 <span class="${pl(q2_2025-q2_2024)}">${fmtDeltaBoth(q2_2025-q2_2024, q2_2024)}</span>`,
+      sub: `粗利率 <strong>${margin_q2}</strong>　前年同期比 <span class="${pl(q2_2025-q2_2024)}">${fmtDeltaBoth(q2_2025-q2_2024, q2_2024)}</span>`,
       color: 'amber'
     },
     {
       label: `${q1L} 粗利合計 (${yr})`,
       value: '¥' + fmt(q1_2025),
-      sub: `前年同期比 <span class="${pl(q1_2025-q1_2024)}">${fmtDeltaBoth(q1_2025-q1_2024, q1_2024)}</span>`,
-      color: 'blue'
+      sub: `粗利率 <strong>${margin_q1}</strong>　前年同期比 <span class="${pl(q1_2025-q1_2024)}">${fmtDeltaBoth(q1_2025-q1_2024, q1_2024)}</span>`,
+      color: 'green'
     },
     {
       label: `前年増減率（${periodLbl}）`,
@@ -1315,7 +1333,13 @@ function renderKPI(data) {
       color: h1_delta >= 0 ? 'green' : 'red'
     },
   ] : [
-    // 1期分のみ：合計 + 増減率
+    // 1期分のみ：売上+粗利率 → 粗利合計 → 増減率
+    {
+      label: `${q1L} 売上合計 (${yr})`,
+      value: '¥' + fmt(rev_total),
+      sub: `粗利率 <strong>${margin_total}</strong>`,
+      color: 'blue'
+    },
     {
       label: `${q1L} 粗利合計 (${yr})`,
       value: '¥' + fmt(q1_2025),
