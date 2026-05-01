@@ -277,11 +277,6 @@
 <main>
   <div class="container">
 
-    <div class="hero">
-      <div class="hero-title">ダッシュボード一覧</div>
-      <div class="hero-sub">各ダッシュボードをクリックして開きます。</div>
-    </div>
-
     <div class="section-header">
       <span class="section-title">ダッシュボード</span>
       <div class="section-line"></div>
@@ -348,12 +343,18 @@
 
       ↑ ここまでコピペ ↑ -->
 
-<!-- 追加枠（見た目用） -->
-      <div class="db-card add-card">
-        <div class="add-icon">＋</div>
-        <div class="add-text">新しいダッシュボードを追加</div>
-        <div class="add-hint">index.html を編集してカード追加</div>
-      </div>
+      <!-- 収支実績（Mgr用） -->
+      <a href="pnl.html" class="db-card" style="--card-color1:#0f4c75;--card-color2:#1a6fa0;">
+        <div class="card-icon">収支</div>
+        <div class="card-name">収支実績ダッシュボード 🔒</div>
+        <div class="card-desc">事業全体のP&L（月次・セグメント・年次トレンド）。売上・粗利・営業利益・販管費内訳を一覧。</div>
+        <div class="card-footer">
+          <span class="card-tag" style="background:rgba(14,168,138,0.1);color:#0ea88a;border-color:rgba(14,168,138,0.3);">Mgr用</span>
+          <span class="card-arrow">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </span>
+        </div>
+      </a>
 
     </div>
     <!-- ============================================= -->
