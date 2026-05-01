@@ -369,8 +369,8 @@
     <div class="charts-grid">
       <div class="card chart-wide">
         <div class="card-title">
-          <span>取引先別 売上総利益 月次推移</span>
-          <span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;">単位: 円</span>
+          <span>月次 売上・粗利 推移</span>
+          <span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;">棒の高さ＝売上　色部分＝粗利　グレー部分＝原価</span>
         </div>
         <div class="chart-container tall"><canvas id="trendChart" width="2604" height="640" style="display: block; box-sizing: border-box; height: 320px; width: 1302px;"></canvas></div>
       </div>
@@ -543,25 +543,58 @@ function renderCharts(data) {
   const months = data.months;
   const monthly = data.monthly;
 
-  // --- Trend Chart ---
+  // --- Trend Chart: 原価（底）＋取引先別粗利（上）＝売上の高さ ---
   const tCtx = document.getElementById('trendChart').getContext('2d');
+  const activeClients2 = CLIENTS.filter(c => months.some(m => monthly[m].clients[c]?.gross > 0));
   charts.trend = new Chart(tCtx, {
     type: 'bar',
     data: {
       labels: months,
-      datasets: CLIENTS.filter(c => months.some(m => monthly[m].clients[c]?.gross > 0)).map(c => ({
-        label: c,
-        data: months.map(m => monthly[m].clients[c]?.gross || 0),
-        backgroundColor: CLIENT_COLORS[c].solid,
-        borderRadius: 4,
-        stack: 'gross',
-      }))
+      datasets: [
+        // 底：原価合計（グレー）
+        {
+          label: '原価',
+          data: months.map(m => monthly[m].total.cost || 0),
+          backgroundColor: 'rgba(180,180,180,0.45)',
+          borderColor: 'rgba(150,150,150,0.6)',
+          borderWidth: 1,
+          borderRadius: 0,
+          stack: 's',
+          order: 10,
+        },
+        // 上：取引先別粗利（色付き）
+        ...activeClients2.map(c => ({
+          label: c,
+          data: months.map(m => monthly[m].clients[c]?.gross || 0),
+          backgroundColor: CLIENT_COLORS[c].solid,
+          borderRadius: 4,
+          stack: 's',
+          order: 1,
+        }))
+      ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { labels: { color: '#475569', font: { family: 'DM Mono', size: 11 }, boxWidth: 12 } },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ¥${fmt(ctx.parsed.y)}` } }
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              if (ctx.dataset.label === '原価') return ` 原価: ¥${fmt(ctx.parsed.y)}`;
+              const m = months[ctx.dataIndex];
+              const rev = monthly[m]?.clients[ctx.dataset.label]?.revenue || 0;
+              const grs = ctx.parsed.y;
+              const rate = rev > 0 ? (grs/rev*100).toFixed(1)+'%' : '—';
+              return ` ${ctx.dataset.label} 粗利: ¥${fmt(grs)}（粗利率 ${rate}）`;
+            },
+            afterBody: ctxArr => {
+              const m = months[ctxArr[0].dataIndex];
+              const t = monthly[m]?.total;
+              if (!t) return [];
+              return [`━━━━━━━━━━━━━━`, ` 売上合計: ¥${fmt(t.revenue)}`, ` 粗利合計: ¥${fmt(t.gross)}（${(t.margin*100).toFixed(1)}%）`];
+            }
+          }
+        }
       },
       scales: {
         x: { stacked: true, ticks: { color: '#64748b' }, grid: { color: 'rgba(0,0,0,0.06)' } },
