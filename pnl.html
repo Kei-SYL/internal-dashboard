@@ -1,0 +1,1008 @@
+<html lang="ja"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>収支実績ダッシュボード</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f7fa;
+    --surface: #ffffff;
+    --surface2: #eef2f7;
+    --border: #dde3ed;
+    --accent: #0f4c75;
+    --accent2: #1a6fa8;
+    --accent3: #d97706;
+    --danger: #dc2626;
+    --positive: #059669;
+    --negative: #dc2626;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --text-dim: #334155;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Noto Sans JP',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+  body::before {
+    content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image: linear-gradient(rgba(15,76,117,0.03) 1px,transparent 1px), linear-gradient(90deg,rgba(15,76,117,0.03) 1px,transparent 1px);
+    background-size:40px 40px;
+  }
+  .container { max-width:1400px; margin:0 auto; padding:0 24px; position:relative; z-index:1; }
+
+  /* Nav */
+  .nav-bar { background:#0f172a; border-bottom:2px solid #1e293b; position:sticky; top:0; z-index:101; }
+  .nav-inner { max-width:1400px; margin:0 auto; padding:0 24px; display:flex; align-items:center; gap:4px; }
+  .nav-label { font-size:10px; font-family:'DM Mono',monospace; color:#475569; letter-spacing:0.1em; text-transform:uppercase; padding:0 14px 0 0; border-right:1px solid #1e293b; margin-right:4px; white-space:nowrap; }
+  .nav-link { display:flex; align-items:center; gap:8px; padding:11px 18px; font-size:13px; font-family:'Noto Sans JP',sans-serif; font-weight:500; color:#94a3b8; text-decoration:none; border-bottom:3px solid transparent; margin-bottom:-2px; transition:all 0.15s; white-space:nowrap; }
+  .nav-link:hover { color:#e2e8f0; background:rgba(255,255,255,0.04); }
+  .nav-link.active { color:#ffffff; border-bottom-color:var(--accent2); }
+  .nav-icon { width:22px; height:22px; border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:10px; font-family:'DM Mono',monospace; font-weight:600; }
+  .nav-link.active .nav-icon { background:var(--accent2); color:#fff; }
+  .nav-link:not(.active) .nav-icon { background:#1e293b; color:#64748b; }
+  .nav-home { color:#64748b !important; font-size:11px; gap:5px; }
+  .nav-home:hover { color:#e2e8f0 !important; }
+
+  /* Header */
+  header { border-bottom:1px solid var(--border); padding:20px 0; background:rgba(245,247,250,0.97); backdrop-filter:blur(12px); }
+  .header-inner { display:flex; align-items:center; justify-content:space-between; }
+  .logo { display:flex; align-items:center; gap:12px; }
+  .logo-mark { width:36px; height:36px; background:linear-gradient(135deg,var(--accent),var(--accent2)); border-radius:8px; display:flex; align-items:center; justify-content:center; font-family:'DM Mono',monospace; font-size:12px; font-weight:500; color:#fff; }
+  .logo-text { font-size:16px; font-weight:500; letter-spacing:0.02em; }
+  .logo-sub { font-size:11px; color:var(--text-muted); font-family:'DM Mono',monospace; margin-top:1px; }
+  .header-meta { display:flex; align-items:center; gap:12px; }
+  .period-badge { font-family:'DM Mono',monospace; font-size:11px; background:var(--accent); color:#fff; padding:4px 12px; border-radius:20px; letter-spacing:0.05em; }
+  .upload-btn { display:flex; align-items:center; gap:6px; padding:8px 16px; background:var(--accent2); color:#fff; border:none; border-radius:8px; font-size:12px; cursor:pointer; font-family:'Noto Sans JP',sans-serif; transition:opacity 0.2s; }
+  .upload-btn:hover { opacity:0.85; }
+
+  main { padding:32px 0 64px; }
+
+  /* KPI */
+  .kpi-grid { display:flex; flex-direction:column; gap:0; margin-bottom:32px; }
+  .kpi-group { margin-bottom:16px; }
+  .kpi-group-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .kpi-group-title { font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-muted); white-space:nowrap; }
+  .kpi-group-title strong { color:var(--text-dim); }
+  .kpi-group-line { flex:1; height:1px; background:var(--border); }
+  .kpi-row { display:grid; gap:16px; }
+  .kpi-row-4 { grid-template-columns:repeat(4,1fr); }
+  .kpi-row-3 { grid-template-columns:repeat(3,1fr); }
+  .kpi-row-2 { grid-template-columns:repeat(2,1fr); }
+  .kpi-secondary .kpi-card { background:var(--surface2); }
+  .kpi-secondary .kpi-value { font-size:22px; color:var(--text-dim); }
+  .kpi-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; position:relative; overflow:hidden; transition:border-color 0.2s; }
+  .kpi-card::after { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+  .kpi-card.navy::after { background:var(--accent); }
+  .kpi-card.blue::after { background:var(--accent2); }
+  .kpi-card.green::after { background:var(--positive); }
+  .kpi-card.amber::after { background:var(--accent3); }
+  .kpi-card.red::after { background:var(--danger); }
+  .kpi-card.teal::after { background:#0d9488; }
+  .kpi-card:hover { border-color:rgba(15,76,117,0.3); }
+  .kpi-label { font-size:11px; color:var(--text-muted); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:10px; }
+  .kpi-value { font-family:'DM Mono',monospace; font-size:26px; font-weight:500; line-height:1; margin-bottom:8px; }
+  .kpi-sub { font-size:12px; color:var(--text-muted); line-height:1.6; }
+  .positive { color:var(--positive) !important; }
+  .negative { color:var(--negative) !important; }
+
+  /* Section */
+  .section-header { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+  .section-title { font-size:13px; font-weight:500; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-dim); }
+  .section-line { flex:1; height:1px; background:var(--border); }
+
+  /* Cards */
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; margin-bottom:16px; }
+  .card-title { font-size:13px; font-weight:500; color:var(--text-dim); margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; }
+  .charts-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:32px; }
+  .chart-wide { grid-column:1/-1; }
+  .chart-container { position:relative; height:320px; }
+  .chart-container.tall { height:400px; }
+  .chart-container.medium { height:260px; }
+
+  /* P&L Cascade */
+  .cascade-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:0; margin-bottom:32px; }
+  .cascade-item { padding:20px 16px; text-align:center; position:relative; }
+  .cascade-item:not(:last-child)::after {
+    content:'→'; position:absolute; right:-8px; top:50%; transform:translateY(-50%);
+    font-size:18px; color:var(--text-muted); z-index:1;
+  }
+  .cascade-label { font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; }
+  .cascade-value { font-family:'DM Mono',monospace; font-size:20px; font-weight:600; line-height:1.1; margin-bottom:4px; }
+  .cascade-rate { font-size:12px; color:var(--text-muted); font-family:'DM Mono',monospace; }
+  .cascade-delta { font-size:10px; margin-top:4px; font-family:'DM Mono',monospace; }
+  .cascade-bar { height:4px; border-radius:2px; margin-top:12px; }
+  .cb-rev  { background:var(--accent2); }
+  .cb-gross { background:#0d9488; }
+  .cb-op   { background:var(--positive); }
+  .cb-ord  { background:#2563eb; }
+  .cb-net  { background:#7c3aed; }
+
+  /* Segment table */
+  .seg-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .seg-table th { padding:8px 12px; font-size:10px; font-weight:600; letter-spacing:0.06em; text-align:right; color:var(--text-muted); border-bottom:2px solid var(--border); background:var(--surface2); }
+  .seg-table th:first-child { text-align:left; padding-left:16px; }
+  .seg-table td { padding:12px 12px; text-align:right; font-family:'DM Mono',monospace; font-size:12px; color:var(--text-dim); border-bottom:1px solid rgba(221,227,237,0.7); }
+  .seg-table td:first-child { text-align:left; font-family:'Noto Sans JP',sans-serif; font-size:13px; color:var(--text); padding-left:16px; }
+  .seg-table tr:hover td { background:rgba(0,0,0,0.01); }
+  .seg-table tr.total-row td { font-weight:700; background:rgba(15,76,117,0.04); border-top:2px solid rgba(15,76,117,0.2); color:var(--accent); }
+  .seg-bar-wrap { display:flex; align-items:center; gap:6px; justify-content:flex-end; }
+  .seg-bar-track { width:60px; height:5px; background:#e2e8f0; border-radius:3px; overflow:hidden; }
+  .seg-bar-fill { height:100%; border-radius:3px; }
+  .rate-pos { color:var(--positive) !important; font-weight:600; }
+  .rate-neg { color:var(--negative) !important; font-weight:600; }
+
+  /* SGA table */
+  .sga-table { width:100%; border-collapse:collapse; font-size:12px; }
+  .sga-table td { padding:8px 12px; border-bottom:1px solid rgba(221,227,237,0.5); }
+  .sga-table td:first-child { color:var(--text-dim); }
+  .sga-table td:nth-child(2) { text-align:right; font-family:'DM Mono',monospace; color:var(--text); font-weight:500; }
+  .sga-table td:nth-child(3) { width:120px; padding-right:16px; }
+  .sga-table td:nth-child(4) { text-align:right; font-family:'DM Mono',monospace; font-size:11px; color:var(--text-muted); width:50px; }
+  .sga-bar { height:6px; background:rgba(15,76,117,0.25); border-radius:3px; }
+  .sga-table tr.sga-person td { background:rgba(15,76,117,0.03); }
+
+  /* Monthly table */
+  .monthly-table { width:100%; border-collapse:collapse; font-size:12px; }
+  .monthly-table th { padding:8px 10px; font-size:10px; font-weight:600; letter-spacing:0.05em; text-align:right; color:var(--text-muted); border-bottom:2px solid var(--border); background:var(--surface2); white-space:nowrap; }
+  .monthly-table th:first-child { text-align:left; padding-left:16px; }
+  .monthly-table td { padding:10px 10px; text-align:right; font-family:'DM Mono',monospace; font-size:12px; color:var(--text-dim); border-bottom:1px solid rgba(221,227,237,0.6); white-space:nowrap; }
+  .monthly-table td:first-child { text-align:left; font-family:'Noto Sans JP',sans-serif; font-size:13px; font-weight:600; color:var(--text); padding-left:16px; }
+  .monthly-table tr.total-row td { font-weight:700; background:rgba(15,76,117,0.04); border-top:2px solid rgba(15,76,117,0.2); color:var(--accent); }
+  .monthly-table tr.rate-row td { font-size:11px; color:var(--text-muted); background:rgba(0,0,0,0.01); }
+
+  /* Category labels */
+  .seg-label { font-size:10px; padding:2px 7px; border-radius:4px; margin-right:6px; font-family:'DM Mono',monospace; font-weight:600; display:inline-block; }
+  .sl-3pl  { background:rgba(15,76,117,0.12); color:var(--accent); }
+  .sl-sw   { background:rgba(0,150,136,0.12); color:#0d9488; }
+  .sl-re   { background:rgba(217,119,6,0.12); color:var(--accent3); }
+  .sl-biz  { background:rgba(124,58,237,0.12); color:#7c3aed; }
+  .sl-oth  { background:rgba(100,116,139,0.1); color:#64748b; }
+
+  /* Modal */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; align-items:center; justify-content:center; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--surface); border-radius:16px; padding:32px; width:480px; max-width:90vw; }
+  .modal h3 { font-size:16px; font-weight:600; margin-bottom:8px; }
+  .modal p { font-size:13px; color:var(--text-muted); margin-bottom:20px; line-height:1.6; }
+  .modal-buttons { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
+  .btn-cancel { padding:8px 20px; border:1px solid var(--border); border-radius:8px; background:transparent; cursor:pointer; font-size:13px; }
+  .modal-drop { border:2px dashed var(--border); border-radius:10px; padding:40px; text-align:center; font-size:13px; color:var(--text-muted); cursor:pointer; transition:border-color 0.2s; }
+  .modal-drop:hover { border-color:var(--accent2); }
+  .modal-drop input { display:none; }
+
+  /* Footer */
+  footer { border-top:1px solid var(--border); padding:20px 0; }
+  footer .container { display:flex; justify-content:space-between; align-items:center; }
+  #footerText { font-family:'DM Mono',monospace; font-size:11px; color:var(--text-muted); }
+  .status-msg { font-size:12px; font-family:'DM Mono',monospace; padding:4px 12px; border-radius:6px; }
+  .status-success { background:rgba(5,150,105,0.1); color:var(--positive); }
+  .status-error { background:rgba(220,38,38,0.1); color:var(--danger); }
+
+  @media(max-width:900px){
+    .kpi-row-4,.kpi-row-3 { grid-template-columns:repeat(2,1fr); }
+    .charts-grid { grid-template-columns:1fr; }
+    .chart-wide { grid-column:1; }
+    .cascade-grid { grid-template-columns:repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav-bar">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-link nav-home">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      ポータル
+    </a>
+    <span style="color:#1e293b;margin:0 4px;">|</span>
+    <a href="hakudo.html" class="nav-link"><span class="nav-icon">白銅</span>白銅定例</a>
+    <a href="gross-profit.html" class="nav-link"><span class="nav-icon">粗利</span>粗利分析</a>
+    <a href="pnl.html" class="nav-link active"><span class="nav-icon">収支</span>収支実績</a>
+    <a href="3pl-pnl.html" class="nav-link"><span class="nav-icon">3PL</span>3PL損益</a>
+  </div>
+</nav>
+
+<header>
+  <div class="container">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-mark">P&L</div>
+        <div>
+          <div class="logo-text">収支実績ダッシュボード</div>
+          <div class="logo-sub">BUSINESS P&L ANALYTICS</div>
+        </div>
+      </div>
+      <div class="header-meta">
+        <div class="period-badge" id="periodBadge">2025年度 上半期</div>
+        <button class="upload-btn" onclick="openModal()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          データ更新
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid" id="kpiGrid"></div>
+
+    <!-- P&L Cascade -->
+    <div class="section-header">
+      <span class="section-title" id="cascadeSectionTitle">損益ウォーターフォール　累計</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card" style="padding:20px 0 16px;margin-bottom:32px;">
+      <div id="cascadeWrap" class="cascade-grid"></div>
+    </div>
+
+    <!-- Monthly Trend -->
+    <div class="section-header">
+      <span class="section-title" id="monthlyTitle">月次 損益推移</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="charts-grid" style="margin-bottom:32px;">
+      <div class="card chart-wide">
+        <div class="card-title">
+          <span id="plChartTitle">月次 売上・粗利・営業利益 推移</span>
+          <span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;">棒の高さ＝売上　折れ線＝粗利率・営業利益率</span>
+        </div>
+        <div class="chart-container tall"><canvas id="monthlyChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Segments -->
+    <div class="section-header">
+      <span class="section-title" id="segTitle">事業別 収益構成　年度累計</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="charts-grid" style="margin-bottom:32px;">
+      <div class="card">
+        <div class="card-title"><span>事業別 売上・粗利・営業利益</span></div>
+        <div class="chart-container medium"><canvas id="segChart"></canvas></div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div style="padding:20px 20px 0;font-size:13px;font-weight:500;color:var(--text-dim);margin-bottom:0;">事業別 収益詳細</div>
+        <div style="overflow-x:auto;margin-top:16px;">
+          <table class="seg-table" id="segTable"></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Annual Trend -->
+    <div class="section-header">
+      <span class="section-title">年度別 業績推移（2021〜）</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="charts-grid" style="margin-bottom:32px;">
+      <div class="card chart-wide">
+        <div class="card-title">
+          <span>年度別 売上・粗利推移</span>
+          <span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;">単位: 千円　　※2025年度は上半期のみ</span>
+        </div>
+        <div class="chart-container"><canvas id="yearlyChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- SGA Breakdown -->
+    <div class="section-header">
+      <span class="section-title" id="sgaTitle">販管費 内訳　年度累計</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="charts-grid" style="margin-bottom:32px;">
+      <div class="card">
+        <div class="card-title"><span>販管費 構成</span></div>
+        <div class="chart-container medium"><canvas id="sgaChart"></canvas></div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div style="padding:20px 20px 0;font-size:13px;font-weight:500;color:var(--text-dim);">販管費 明細</div>
+        <div style="overflow-x:auto;margin-top:12px;" id="sgaTableWrap"></div>
+      </div>
+    </div>
+
+    <!-- Monthly Table -->
+    <div class="section-header">
+      <span class="section-title" id="tableTitle">月次 損益明細</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;margin-bottom:32px;">
+      <div style="overflow-x:auto;" id="monthlyTableWrap"></div>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <span id="footerText">データ未読込</span>
+    <span id="statusMsg"></span>
+  </div>
+</footer>
+
+<!-- Upload Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3>📊 データ更新</h3>
+    <p>「事業別収支実績」Excelファイル（.xlsm / .xlsx）をアップロードしてください。<br>
+    「2025年度事業別収支」「2025年度業別サマリー」「年度別_事業別_業績推移」シートを読み込みます。</p>
+    <div class="modal-drop" onclick="document.getElementById('xlsxInput').click()">
+      <input type="file" id="xlsxInput" accept=".xlsx,.xlsm,.xls" onchange="handleFile(event)">
+      <div style="font-size:28px;margin-bottom:8px;">📁</div>
+      <div>クリックしてファイルを選択</div>
+      <div style="font-size:11px;margin-top:4px;color:var(--text-muted);">.xlsx / .xlsm</div>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn-cancel" onclick="closeModal()">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =============================================
+// DEFAULT DATA
+// =============================================
+const DEFAULT_DATA = {
+  period: "2025年度 上半期（10〜3月）",
+  year: "2025",
+  updatedAt: "2026/5/1",
+  note: "※2025年度は上半期（10月〜3月）の6ヶ月のみ",
+
+  monthly: [
+    { month:"10月", revenue:30643007, cogs:19427542, gross:11215465, sga:8177267, op:3038198,  ord:2964115,  net:2963896,  prev_rev:30152903, prev_gross:6553806,  prev_op:531580   },
+    { month:"11月", revenue:21908508, cogs:15858412, gross:6050096,  sga:5514310, op:535786,   ord:460242,   net:460037,   prev_rev:25034013, prev_gross:5821471,  prev_op:259317   },
+    { month:"12月", revenue:24178606, cogs:17219292, gross:6959314,  sga:7201193, op:-241879,  ord:-416092,  net:-416261,  prev_rev:33569283, prev_gross:8918998,  prev_op:3440670  },
+    { month:"1月",  revenue:23650062, cogs:17532653, gross:6117409,  sga:5670267, op:447142,   ord:1647687,  net:1647510,  prev_rev:24483721, prev_gross:6138990,  prev_op:620442   },
+    { month:"2月",  revenue:22027149, cogs:16794748, gross:5232401,  sga:4784127, op:448274,   ord:386827,   net:2120472,  prev_rev:23021346, prev_gross:4950403,  prev_op:-877933  },
+    { month:"3月",  revenue:26442178, cogs:20283454, gross:6158724,  sga:4927896, op:1230828,  ord:1140545,  net:951606,   prev_rev:25563097, prev_gross:5901534,  prev_op:-35122   },
+  ],
+
+  total: {
+    revenue:148849510, cogs:107116101, gross:41733409, gross_rate:0.2804,
+    sga:36275060, op:5458349, op_rate:0.0367, ord:6183324, ord_rate:0.0415,
+    net:7727260, net_rate:0.0519,
+    personnel:19228419, labor_ratio:0.4607,
+    ebitda:7883349,
+    prev_revenue:161824363, prev_gross:38285202, prev_op:3938954,
+  },
+
+  segments: [
+    { name:"3PL",       cls:"sl-3pl",  revenue:125165771, cogs:100089722, gross:25076049, gross_rate:0.2003, sga:18208448, op:6867601,  op_rate:0.0549 },
+    { name:"ソフトウェア", cls:"sl-sw", revenue:10000400,  cogs:4437524,   gross:5562876,  gross_rate:0.5563, sga:8809805,  op:-3246929, op_rate:-0.3247 },
+    { name:"不動産",     cls:"sl-re",  revenue:4693339,   cogs:2543400,   gross:2149939,  gross_rate:0.4581, sga:2890836,  op:-740897,  op_rate:-0.1579 },
+    { name:"業務委託",   cls:"sl-biz", revenue:3600000,   cogs:0,         gross:3600000,  gross_rate:1.0000, sga:3456040,  op:143960,   op_rate:0.0400  },
+    { name:"その他",     cls:"sl-oth", revenue:5390000,   cogs:45455,     gross:5344545,  gross_rate:0.9916, sga:2909931,  op:2434614,  op_rate:0.4517  },
+  ],
+
+  yearly: [
+    { year:"2021", revenue:323178, gross:48452, gross_rate:0.1499, op:-7776,  ord:-5032 },
+    { year:"2022", revenue:343843, gross:65268, gross_rate:0.1898, op:-3407,  ord:-2086 },
+    { year:"2023", revenue:351012, gross:70736, gross_rate:0.2015, op:7141,   ord:8634  },
+    { year:"2024", revenue:314304, gross:77075, gross_rate:0.2452, op:5996,   ord:5344  },
+    { year:"2025上期", revenue:148850, gross:41733, gross_rate:0.2804, op:5458, ord:7212 },
+  ],
+
+  sga: [
+    { name:"人件費",     amount:19228419, is_person:true  },
+    { name:"業務委託料", amount:3920931,  is_person:false },
+    { name:"減価償却費", amount:2425000,  is_person:false },
+    { name:"研修採用費", amount:1564225,  is_person:false },
+    { name:"地代家賃",   amount:1496547,  is_person:false },
+    { name:"通信費",     amount:1266452,  is_person:false },
+    { name:"支払手数料", amount:1389092,  is_person:false },
+    { name:"旅費交通費", amount:698825,   is_person:false },
+    { name:"雑費",       amount:598875,   is_person:false },
+    { name:"賃借料",     amount:833855,   is_person:false },
+    { name:"車両費",     amount:209812,   is_person:false },
+    { name:"保険料",     amount:174810,   is_person:false },
+    { name:"備品消耗品", amount:499399,   is_person:false },
+    { name:"その他",     amount:768569,   is_person:false },
+  ],
+
+  targets: {
+    gross_rate_min:0.20, gross_rate_target:0.30,
+    op_rate_min:0.02,    op_rate_target:0.05,
+    labor_ratio_max:0.50, labor_ratio_target:0.40,
+  }
+};
+
+let currentData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+let charts = {};
+
+// =============================================
+// FORMATTING
+// =============================================
+const fmt  = n => new Intl.NumberFormat('ja-JP').format(Math.round(n));
+const fmtM = n => { // 万円表示
+  const abs = Math.abs(n);
+  if (abs >= 1e8) return (n/1e4).toFixed(0) + '万';
+  if (abs >= 1e7) return (n/1e4).toFixed(0) + '万';
+  if (abs >= 1e6) return (n/1e4).toFixed(1) + '万';
+  return fmt(n);
+};
+const fmtK = n => fmt(Math.round(n/1000)); // 千円
+const pct  = n => (n*100).toFixed(1) + '%';
+const pl   = n => n >= 0 ? 'positive' : 'negative';
+const deltaSign = n => n >= 0 ? '+' : '';
+const deltaBadge = (curr, prev) => {
+  if (!prev) return '';
+  const r = (curr-prev)/prev;
+  const cls = r >= 0 ? 'positive' : 'negative';
+  return `<span class="${cls}" style="font-size:10px;font-family:'DM Mono',monospace;">${deltaSign(r)}${(r*100).toFixed(1)}%</span>`;
+};
+
+// =============================================
+// RENDER KPI
+// =============================================
+function renderKPI(data) {
+  const t = data.total;
+  const yr = data.year || '2025';
+  const period = data.period || '';
+
+  const prev_gross_rate = t.prev_revenue > 0 ? t.prev_gross / t.prev_revenue : 0;
+  const gross_rate_delta = t.gross_rate - prev_gross_rate;
+
+  const card = (color, label, value, sub) =>
+    `<div class="kpi-card ${color}"><div class="kpi-label">${label}</div><div class="kpi-value">${value}</div><div class="kpi-sub">${sub}</div></div>`;
+
+  const rev_yoy   = t.prev_revenue > 0 ? ((t.revenue - t.prev_revenue)/t.prev_revenue) : null;
+  const gross_yoy = t.prev_gross   > 0 ? ((t.gross   - t.prev_gross  )/t.prev_gross  ) : null;
+  const op_yoy    = t.prev_op !== 0   ? ((t.op       - t.prev_op     )/Math.abs(t.prev_op)) : null;
+
+  const cumCards = [
+    card('navy',  `売上合計`,
+         `¥${fmt(t.revenue)}`,
+         `前年同期比 <span class="${pl(t.revenue-t.prev_revenue)}">${rev_yoy !== null ? deltaSign(rev_yoy)+(rev_yoy*100).toFixed(1)+'%' : '—'}</span><br>前年: ¥${fmt(t.prev_revenue)}`),
+    card('teal',  `粗利合計`,
+         `¥${fmt(t.gross)}`,
+         `粗利率 <strong>${pct(t.gross_rate)}</strong>　前年 ${pct(prev_gross_rate)}<br>前年比 <span class="${pl(t.gross-t.prev_gross)}">${gross_yoy !== null ? deltaSign(gross_yoy)+(gross_yoy*100).toFixed(1)+'%' : '—'}</span>`),
+    card(t.op >= 0 ? 'green' : 'red', `営業利益`,
+         `¥${fmt(t.op)}`,
+         `営業利益率 <strong class="${pl(t.op)}">${pct(t.op_rate)}</strong>　目標 ${pct(data.targets.op_rate_target)}<br>前年比 <span class="${pl(t.op-t.prev_op)}">${op_yoy !== null ? deltaSign(op_yoy)+(op_yoy*100).toFixed(1)+'%' : '—'}</span>`),
+    card('blue', `経常利益`,
+         `¥${fmt(t.ord)}`,
+         `経常利益率 <strong>${pct(t.ord_rate)}</strong><br>EBITDA ¥${fmt(t.ebitda)}`),
+  ];
+
+  const subCards = [
+    card('amber', `労働分配率`,
+         pct(t.labor_ratio),
+         `目標: ${pct(data.targets.labor_ratio_target)}以下<br>人件費 ¥${fmt(t.personnel)}`),
+    card(t.net >= 0 ? 'green' : 'red', `当期純利益`,
+         `¥${fmt(t.net)}`,
+         `当期利益率 <strong>${pct(t.net_rate)}</strong>`),
+  ];
+
+  document.getElementById('kpiGrid').innerHTML = `
+    <div class="kpi-group">
+      <div class="kpi-group-header">
+        <span class="kpi-group-title"><strong>累計</strong>　${period}</span>
+        <div class="kpi-group-line"></div>
+      </div>
+      <div class="kpi-row kpi-row-4">${cumCards.join('')}</div>
+    </div>
+    <div class="kpi-group kpi-secondary">
+      <div class="kpi-group-header">
+        <span class="kpi-group-title">効率指標</span>
+        <div class="kpi-group-line"></div>
+      </div>
+      <div class="kpi-row kpi-row-2">${subCards.join('')}</div>
+    </div>`;
+}
+
+// =============================================
+// RENDER CASCADE
+// =============================================
+function renderCascade(data) {
+  const t = data.total;
+  const items = [
+    { label:'売上高',   value:t.revenue,   rate:null,        color:'cb-rev',   barW:100 },
+    { label:'粗利',     value:t.gross,     rate:t.gross_rate, color:'cb-gross', barW:Math.round(t.gross/t.revenue*100) },
+    { label:'営業利益', value:t.op,        rate:t.op_rate,   color:'cb-op',    barW:Math.max(0,Math.round(t.op/t.revenue*100)) },
+    { label:'経常利益', value:t.ord,       rate:t.ord_rate,  color:'cb-ord',   barW:Math.max(0,Math.round(t.ord/t.revenue*100)) },
+    { label:'当期純利益', value:t.net,     rate:t.net_rate,  color:'cb-net',   barW:Math.max(0,Math.round(t.net/t.revenue*100)) },
+  ];
+  document.getElementById('cascadeWrap').innerHTML = items.map(item => `
+    <div class="cascade-item">
+      <div class="cascade-label">${item.label}</div>
+      <div class="cascade-value ${pl(item.value)}">¥${fmtM(item.value)}</div>
+      ${item.rate !== null ? `<div class="cascade-rate">${pct(item.rate)}</div>` : '<div class="cascade-rate" style="height:18px;"></div>'}
+      <div class="cascade-bar ${item.color}" style="width:${item.barW}%;min-width:${item.value >= 0 ? '4px' : '0'};"></div>
+    </div>`).join('');
+}
+
+// =============================================
+// RENDER CHARTS
+// =============================================
+function renderCharts(data) {
+  Object.values(charts).forEach(c => c.destroy());
+  charts = {};
+
+  const months = data.monthly.map(m => m.month);
+
+  // Monthly P&L Chart
+  const revData   = data.monthly.map(m => m.revenue);
+  const cogsData  = data.monthly.map(m => m.cogs);
+  const sgaData   = data.monthly.map(m => m.sga);
+  const opData    = data.monthly.map(m => m.op);
+  const grRateData = data.monthly.map(m => m.revenue > 0 ? (m.gross/m.revenue*100) : 0);
+  const opRateData = data.monthly.map(m => m.revenue > 0 ? (m.op/m.revenue*100) : 0);
+
+  charts.monthly = new Chart(document.getElementById('monthlyChart'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        { label:'売上原価', data:cogsData, backgroundColor:'rgba(148,163,184,0.5)', stack:'s' },
+        { label:'販管費',   data:sgaData,  backgroundColor:'rgba(96,165,250,0.45)', stack:'s' },
+        { label:'営業利益', data:opData.map(v => v >= 0 ? v : 0), backgroundColor:'rgba(5,150,105,0.7)', stack:'s' },
+        { label:'営業損失', data:opData.map(v => v <  0 ? v : 0), backgroundColor:'rgba(220,38,38,0.6)',  stack:'s' },
+        { label:'粗利率',      data:grRateData, type:'line', yAxisID:'yR', borderColor:'#0d9488', backgroundColor:'transparent', borderWidth:2, pointRadius:4, tension:0.3 },
+        { label:'営業利益率',  data:opRateData, type:'line', yAxisID:'yR', borderColor:'#d97706', backgroundColor:'transparent', borderWidth:2, pointRadius:4, tension:0.3, borderDash:[4,3] },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend:{ position:'top', labels:{ font:{size:11}, boxWidth:12, padding:16 } },
+        tooltip:{ callbacks:{ label: ctx => {
+          if (ctx.dataset.yAxisID === 'yR') return ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%`;
+          return ` ${ctx.dataset.label}: ¥${fmt(ctx.parsed.y)}`;
+        }}}
+      },
+      scales: {
+        x:{ stacked:true, grid:{display:false} },
+        y:{ stacked:true, ticks:{ callback:v => '¥'+fmtM(v), font:{size:11} }, grid:{color:'rgba(0,0,0,0.05)' } },
+        yR:{ position:'right', grid:{display:false}, ticks:{ callback:v => v+'%', font:{size:11} }, min:-5 }
+      }
+    }
+  });
+
+  // Segment Chart
+  const segNames  = data.segments.map(s => s.name);
+  const segRev    = data.segments.map(s => s.revenue);
+  const segGross  = data.segments.map(s => s.gross);
+  const segOp     = data.segments.map(s => s.op);
+  charts.seg = new Chart(document.getElementById('segChart'), {
+    type:'bar',
+    data: {
+      labels: segNames,
+      datasets: [
+        { label:'売上',     data:segRev,   backgroundColor:'rgba(15,76,117,0.25)',  borderRadius:3 },
+        { label:'粗利',     data:segGross, backgroundColor:'rgba(13,148,136,0.6)',  borderRadius:3 },
+        { label:'営業利益', data:segOp,    backgroundColor: segOp.map(v => v >= 0 ? 'rgba(5,150,105,0.7)' : 'rgba(220,38,38,0.6)'), borderRadius:3 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false, indexAxis:'y',
+      plugins:{ legend:{ position:'top', labels:{ font:{size:11}, boxWidth:12 } } },
+      scales: {
+        x:{ ticks:{ callback:v => '¥'+fmtM(v), font:{size:11} }, grid:{color:'rgba(0,0,0,0.05)'} },
+        y:{ grid:{display:false} }
+      }
+    }
+  });
+
+  // Annual trend
+  const years = data.yearly.map(y => y.year);
+  charts.yearly = new Chart(document.getElementById('yearlyChart'), {
+    type:'bar',
+    data: {
+      labels: years,
+      datasets: [
+        { label:'売上（千円）', data:data.yearly.map(y=>y.revenue), backgroundColor:'rgba(15,76,117,0.2)', borderColor:'rgba(15,76,117,0.5)', borderWidth:1, borderRadius:3, yAxisID:'yL' },
+        { label:'粗利（千円）', data:data.yearly.map(y=>y.gross),   backgroundColor:'rgba(13,148,136,0.5)', borderRadius:3, yAxisID:'yL' },
+        { label:'粗利率',       data:data.yearly.map(y=>y.gross_rate*100), type:'line', yAxisID:'yR', borderColor:'#0d9488', backgroundColor:'transparent', borderWidth:2.5, pointRadius:5, tension:0.3 },
+        { label:'営業利益率',   data:data.yearly.map(y=>y.revenue > 0 ? y.op/y.revenue*100 : 0), type:'line', yAxisID:'yR', borderColor:'#d97706', backgroundColor:'transparent', borderWidth:2, pointRadius:4, tension:0.3, borderDash:[4,3] },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'top', labels:{ font:{size:11}, boxWidth:12 } } },
+      scales: {
+        x:{ grid:{display:false} },
+        yL:{ position:'left', ticks:{ callback:v => fmt(v)+'千', font:{size:11} }, grid:{color:'rgba(0,0,0,0.05)'} },
+        yR:{ position:'right', grid:{display:false}, ticks:{ callback:v => v.toFixed(1)+'%', font:{size:11} } }
+      }
+    }
+  });
+
+  // SGA donut
+  const top6 = [...data.sga].sort((a,b)=>b.amount-a.amount).slice(0,6);
+  const otherAmt = data.sga.slice(6).reduce((s,x)=>s+x.amount,0);
+  const sgaLabels = [...top6.map(s=>s.name), 'その他'];
+  const sgaAmounts = [...top6.map(s=>s.amount), otherAmt];
+  const sgaColors = ['rgba(15,76,117,0.85)','rgba(26,111,168,0.8)','rgba(13,148,136,0.75)','rgba(217,119,6,0.75)','rgba(124,58,237,0.65)','rgba(5,150,105,0.65)','rgba(148,163,184,0.55)'];
+  charts.sga = new Chart(document.getElementById('sgaChart'), {
+    type:'doughnut',
+    data:{ labels:sgaLabels, datasets:[{ data:sgaAmounts, backgroundColor:sgaColors, borderWidth:2, borderColor:'#fff', hoverOffset:6 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false, cutout:'62%',
+      plugins:{ legend:{ position:'right', labels:{ font:{size:11}, boxWidth:12 } },
+        tooltip:{ callbacks:{ label: ctx => ` ${ctx.label}: ¥${fmt(ctx.parsed)} (${(ctx.parsed/data.total.sga*100).toFixed(1)}%)` } }
+      }
+    }
+  });
+}
+
+// =============================================
+// RENDER SEGMENT TABLE
+// =============================================
+function renderSegTable(data) {
+  const t = data.total;
+  let html = `<thead><tr>
+    <th style="text-align:left;padding-left:16px;">事業</th>
+    <th>売上</th><th>粗利</th><th>粗利率</th><th>販管費</th><th>営業利益</th><th>営業利益率</th>
+  </tr></thead><tbody>`;
+  data.segments.forEach(s => {
+    const opCls = s.op >= 0 ? 'rate-pos' : 'rate-neg';
+    const grCls = s.gross_rate >= data.targets.gross_rate_min ? 'rate-pos' : 'rate-neg';
+    const grBar = Math.min(100, Math.round(s.gross_rate * 100));
+    html += `<tr>
+      <td><span class="seg-label ${s.cls}">${s.name}</span></td>
+      <td>¥${fmt(s.revenue)}</td>
+      <td>¥${fmt(s.gross)}</td>
+      <td><div class="seg-bar-wrap">
+        <div class="seg-bar-track"><div class="seg-bar-fill" style="width:${grBar}%;background:${s.gross_rate >= data.targets.gross_rate_min ? 'var(--positive)' : 'var(--negative)'};"></div></div>
+        <span class="${grCls}">${pct(s.gross_rate)}</span>
+      </div></td>
+      <td>¥${fmt(s.sga)}</td>
+      <td class="${opCls}">¥${fmt(s.op)}</td>
+      <td class="${opCls}">${pct(s.op_rate)}</td>
+    </tr>`;
+  });
+  // Total row
+  html += `<tr class="total-row">
+    <td>全社 合計</td>
+    <td>¥${fmt(t.revenue)}</td>
+    <td>¥${fmt(t.gross)}</td>
+    <td>${pct(t.gross_rate)}</td>
+    <td>¥${fmt(t.sga)}</td>
+    <td>¥${fmt(t.op)}</td>
+    <td>${pct(t.op_rate)}</td>
+  </tr>`;
+  html += '</tbody>';
+  document.getElementById('segTable').innerHTML = html;
+}
+
+// =============================================
+// RENDER SGA TABLE
+// =============================================
+function renderSgaTable(data) {
+  const total = data.total.sga;
+  let html = `<table class="sga-table">`;
+  const sorted = [...data.sga].sort((a,b) => b.amount - a.amount);
+  sorted.forEach(s => {
+    const ratio = total > 0 ? s.amount / total : 0;
+    const barW = Math.round(ratio * 100);
+    html += `<tr class="${s.is_person ? 'sga-person' : ''}">
+      <td style="padding-left:16px;">${s.name}</td>
+      <td>¥${fmt(s.amount)}</td>
+      <td><div class="sga-bar" style="width:${barW}%;"></div></td>
+      <td>${(ratio*100).toFixed(1)}%</td>
+    </tr>`;
+  });
+  html += `<tr style="border-top:2px solid var(--border);font-weight:700;">
+    <td style="padding-left:16px;color:var(--text);">合計</td>
+    <td style="color:var(--accent);font-weight:700;">¥${fmt(total)}</td><td></td><td>100%</td>
+  </tr></table>`;
+  document.getElementById('sgaTableWrap').innerHTML = html;
+}
+
+// =============================================
+// RENDER MONTHLY TABLE
+// =============================================
+function renderMonthlyTable(data) {
+  const months = data.monthly.map(m => m.month);
+  const totals = data.total;
+  const rows = [
+    { label:'売上高',    key:'revenue', isRate:false },
+    { label:'売上原価',  key:'cogs',    isRate:false },
+    { label:'粗利',      key:'gross',   isRate:false },
+    { label:'粗利率',    key:'gross_rate_calc', isRate:true  },
+    { label:'販管費',    key:'sga',     isRate:false },
+    { label:'営業利益',  key:'op',      isRate:false },
+    { label:'営業利益率',key:'op_rate_calc',    isRate:true  },
+    { label:'経常利益',  key:'ord',     isRate:false },
+    { label:'当期純利益',key:'net',     isRate:false },
+  ];
+  const totalMap = { revenue:totals.revenue, cogs:totals.cogs, gross:totals.gross, sga:totals.sga, op:totals.op, ord:totals.ord, net:totals.net };
+
+  let html = `<table class="monthly-table"><thead><tr>
+    <th style="text-align:left;padding-left:16px;">項目</th>
+    ${months.map(m => `<th>${m}</th>`).join('')}
+    <th>累計</th>
+  </tr></thead><tbody>`;
+
+  rows.forEach(r => {
+    const isR = r.isRate;
+    const cls = isR ? ' class="rate-row"' : '';
+    html += `<tr${cls}><td>${r.label}</td>`;
+    data.monthly.forEach(m => {
+      let val;
+      if (r.key === 'gross_rate_calc') val = m.revenue > 0 ? m.gross/m.revenue : 0;
+      else if (r.key === 'op_rate_calc') val = m.revenue > 0 ? m.op/m.revenue : 0;
+      else val = m[r.key];
+
+      if (isR) {
+        const cls2 = val >= 0 ? 'positive' : 'negative';
+        html += `<td class="${cls2}">${pct(val)}</td>`;
+      } else {
+        const cls2 = val >= 0 ? '' : ' class="negative"';
+        html += `<td${cls2}>¥${fmt(val)}</td>`;
+      }
+    });
+    // Total column
+    if (isR) {
+      const tv = r.key === 'gross_rate_calc' ? totals.gross_rate : totals.op_rate;
+      html += `<td class="${tv >= 0 ? 'positive' : 'negative'}">${pct(tv)}</td>`;
+    } else {
+      const tv = totalMap[r.key] ?? 0;
+      html += `<td class="total-row" style="font-weight:700;">¥${fmt(tv)}</td>`;
+    }
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('monthlyTableWrap').innerHTML = html;
+}
+
+// =============================================
+// RENDER ALL
+// =============================================
+function renderAll(data) {
+  document.getElementById('periodBadge').textContent = data.period;
+  document.getElementById('footerText').textContent = `最終更新: ${data.updatedAt} | データソース: 事業別収支実績xlsx`;
+  document.getElementById('cascadeSectionTitle').textContent = `損益ウォーターフォール　${data.period}`;
+  document.getElementById('monthlyTitle').textContent = `月次 損益推移　${data.period}`;
+  document.getElementById('segTitle').textContent = `事業別 収益構成　${data.period}`;
+  document.getElementById('sgaTitle').textContent = `販管費 内訳　${data.period}`;
+  document.getElementById('tableTitle').textContent = `月次 損益明細　${data.period}`;
+  renderKPI(data);
+  renderCascade(data);
+  renderCharts(data);
+  renderSegTable(data);
+  renderSgaTable(data);
+  renderMonthlyTable(data);
+}
+
+// =============================================
+// EXCEL PARSER
+// =============================================
+function parseXLSX(wb) {
+  // シート名探索
+  const findSheet = names => {
+    for (const n of names) {
+      const found = wb.SheetNames.find(s => s.includes(n));
+      if (found) return wb.Sheets[found];
+    }
+    return null;
+  };
+
+  const wsMain  = findSheet(['事業別収支', '収支（10']);
+  const wsSummary = findSheet(['業別サマリー', '事業別サマリー']);
+  const wsYearly  = findSheet(['年度別', '業績推移']);
+
+  if (!wsMain) { alert('「事業別収支」シートが見つかりません'); return null; }
+
+  const toN = v => { const n = parseFloat(String(v||'').replace(/,/g,'')); return isNaN(n) ? 0 : n; };
+  const toS = v => String(v||'').trim();
+
+  // Parse monthly (row1=header, row2=revenue, row3=cogs, row4=gross, row5=personnel, row31=sga, row32=op, row35=ord, row40=net)
+  const mRange = XLSX.utils.decode_range(wsMain['!ref'] || 'A1:Z50');
+  const mRows = {};
+  for (let r = mRange.s.r; r <= Math.min(mRange.e.r, 42); r++) {
+    const row = {};
+    for (let c = mRange.s.c; c <= Math.min(mRange.e.c, 20); c++) {
+      const cell = wsMain[XLSX.utils.encode_cell({r,c})];
+      row[c] = cell ? cell.v : null;
+    }
+    mRows[r+1] = row; // 1-indexed
+  }
+
+  // Column mapping: find months from row1 (D=3, E=4, F=5, G=6, H=7, I=8 = col index 3-8)
+  const colMap = {}; // month -> col index
+  const headerRow = mRows[1] || {};
+  let monthCols = [];
+  for (let c = 3; c <= 14; c++) {
+    const v = toS(headerRow[c]);
+    if (v.includes('月')) { monthCols.push({ col:c, month:v }); }
+  }
+  if (!monthCols.length) monthCols = [3,4,5,6,7,8].map((c,i)=>({ col:c, month:['10月','11月','12月','1月','2月','3月'][i] }));
+
+  // Row identifiers
+  const findRow = (label) => {
+    for (const [ridx, row] of Object.entries(mRows)) {
+      for (const v of Object.values(row)) {
+        if (toS(v) === label) return parseInt(ridx);
+      }
+    }
+    return null;
+  };
+  const rRev = findRow('売上高合計') || 2;
+  const rCogs = findRow('売上原価') || 3;
+  const rGross = findRow('売上総利益') || 4;
+  const rSGA = findRow('販売費及び一般管理費合計') || 31;
+  const rOp = findRow('営業利益') || 32;
+  const rOrd = findRow('経常利益') || 35;
+  const rNet = findRow('当期利益') || 40;
+  const rPersonnel = 5;
+
+  const monthly = monthCols.map(mc => {
+    const c = mc.col;
+    return {
+      month:    mc.month,
+      revenue:  toN(mRows[rRev]?.[c]),
+      cogs:     toN(mRows[rCogs]?.[c]),
+      gross:    toN(mRows[rGross]?.[c]),
+      sga:      toN(mRows[rSGA]?.[c]),
+      op:       toN(mRows[rOp]?.[c]),
+      ord:      toN(mRows[rOrd]?.[c]),
+      net:      toN(mRows[rNet]?.[c]),
+      prev_rev:   0, prev_gross:0, prev_op:0,
+    };
+  }).filter(m => m.revenue !== 0 || m.gross !== 0);
+
+  // Total col (Q=16)
+  const totalCol = 16;
+  const totalRev   = toN(mRows[rRev]?.[totalCol]);
+  const totalCogs  = toN(mRows[rCogs]?.[totalCol]);
+  const totalGross = toN(mRows[rGross]?.[totalCol]);
+  const totalSGA   = toN(mRows[rSGA]?.[totalCol]);
+  const totalOp    = toN(mRows[rOp]?.[totalCol]);
+  const totalOrd   = toN(mRows[rOrd]?.[totalCol]);
+  const totalNet   = toN(mRows[rNet]?.[totalCol]);
+  const totalPersonnel = toN(mRows[rPersonnel]?.[totalCol]);
+
+  // SGA breakdown
+  const sgaLabels = ['人件費','業務委託料','減価償却費','研修採用費','地代家賃','通信費','支払手数料','旅費交通費','賃借料','雑費','車両費','保険料','備品消耗品','水道光熱費','その他'];
+  const sgaRows = [5,8,25,7,26,13,20,12,27,30,21,22,null,17,null];
+  const sga = sgaLabels.map((name,i) => {
+    const rowIdx = sgaRows[i];
+    const amount = rowIdx ? toN(mRows[rowIdx]?.[totalCol]) : 0;
+    return { name, amount, is_person: name === '人件費' };
+  }).filter(s => s.amount > 0);
+
+  // Segments from summary sheet
+  let segments = DEFAULT_DATA.segments;
+  if (wsSummary) {
+    const sRange = XLSX.utils.decode_range(wsSummary['!ref'] || 'A1:L25');
+    const sRows = {};
+    for (let r = sRange.s.r; r <= Math.min(sRange.e.r, 24); r++) {
+      const row = {};
+      for (let c = sRange.s.c; c <= Math.min(sRange.e.c, 12); c++) {
+        const cell = wsSummary[XLSX.utils.encode_cell({r,c})];
+        row[c] = cell ? cell.v : null;
+      }
+      sRows[r+1] = row;
+    }
+    // Col: B=1, C=2(3PL), D=3(SW), E=4(不動産), F=5(業務委託), G=6(その他), H=7(全社)
+    const segCols = [2,3,4,5,6];
+    const segNames = ['3PL','ソフトウェア','不動産','業務委託','その他'];
+    const segCls   = ['sl-3pl','sl-sw','sl-re','sl-biz','sl-oth'];
+    const findSRow = (label) => {
+      for (const [ridx, row] of Object.entries(sRows)) {
+        if (toS(row[1]) === label) return parseInt(ridx);
+      }
+      return null;
+    };
+    const rSRev   = findSRow('売上') || 3;
+    const rSCogs  = findSRow('仕入') || 5;
+    const rSGross = findSRow('粗利') || 6;
+    const rSGRate = findSRow('粗利率') || 7;
+    const rSSGA   = findSRow('販管費') || 9;
+    const rSOp    = findSRow('営業利益') || 10;
+    const rSOpR   = findSRow('営業利益率') || 11;
+    segments = segCols.map((c, i) => ({
+      name: segNames[i], cls: segCls[i],
+      revenue:    toN(sRows[rSRev]?.[c]),
+      cogs:       toN(sRows[rSCogs]?.[c]),
+      gross:      toN(sRows[rSGross]?.[c]),
+      gross_rate: toN(sRows[rSGRate]?.[c]),
+      sga:        toN(sRows[rSSGA]?.[c]),
+      op:         toN(sRows[rSOp]?.[c]),
+      op_rate:    toN(sRows[rSOpR]?.[c]),
+    })).filter(s => s.revenue > 0 || s.gross > 0);
+  }
+
+  // Yearly from trend sheet
+  let yearly = DEFAULT_DATA.yearly;
+  if (wsYearly) {
+    const yRange = XLSX.utils.decode_range(wsYearly['!ref'] || 'A1:J20');
+    const yRows = {};
+    for (let r = yRange.s.r; r <= Math.min(yRange.e.r, 20); r++) {
+      const row = {};
+      for (let c = yRange.s.c; c <= Math.min(yRange.e.c, 10); c++) {
+        const cell = wsYearly[XLSX.utils.encode_cell({r,c})];
+        row[c] = cell ? cell.v : null;
+      }
+      yRows[r+1] = row;
+    }
+    const yearLabels = [1,2,3,4,5,6,7,8].map(c => toS(yRows[2]?.[c])).filter(y => y && /\d{4}/.test(y));
+    const yearCols   = [1,2,3,4,5,6,7,8].filter((c,i) => { const v = toS(yRows[2]?.[c]); return v && /\d{4}/.test(v); });
+    if (yearCols.length) {
+      const findYRow = label => {
+        for (const [ridx, row] of Object.entries(yRows)) {
+          if (toS(row[1]) === label) return parseInt(ridx);
+        }
+        return null;
+      };
+      const ryRev   = findYRow('売上高合計') || 3;
+      const ryGross = findYRow('売上総利益') || 5;
+      const ryGRate = findYRow('粗利率') || 6;
+      const ryOp    = findYRow('営業利益') || 10;
+      const ryOrd   = findYRow('経常損益') || 13;
+      yearly = yearCols.map((c, i) => ({
+        year:       yearLabels[i],
+        revenue:    toN(yRows[ryRev]?.[c]),
+        gross:      toN(yRows[ryGross]?.[c]),
+        gross_rate: toN(yRows[ryGRate]?.[c]),
+        op:         toN(yRows[ryOp]?.[c]),
+        ord:        toN(yRows[ryOrd]?.[c]),
+      })).filter(y => y.revenue > 0);
+    }
+  }
+
+  const usedMonths = monthly.length;
+  const period = `${new Date().getFullYear()-1}年度 ${usedMonths >= 12 ? '通期' : '上半期'}（${monthly.map(m=>m.month).join('・')}）`;
+
+  return {
+    period, year: String(new Date().getFullYear()-1),
+    updatedAt: new Date().toLocaleDateString('ja-JP'),
+    monthly,
+    total: {
+      revenue: totalRev, cogs: totalCogs, gross: totalGross,
+      gross_rate: totalRev > 0 ? totalGross/totalRev : 0,
+      sga: totalSGA, op: totalOp,
+      op_rate: totalRev > 0 ? totalOp/totalRev : 0,
+      ord: totalOrd, ord_rate: totalRev > 0 ? totalOrd/totalRev : 0,
+      net: totalNet, net_rate: totalRev > 0 ? totalNet/totalRev : 0,
+      personnel: totalPersonnel,
+      labor_ratio: totalGross > 0 ? totalPersonnel/totalGross : 0,
+      ebitda: totalOp + sga.find(s=>s.name==='減価償却費')?.amount || totalOp,
+      prev_revenue: DEFAULT_DATA.total.prev_revenue,
+      prev_gross:   DEFAULT_DATA.total.prev_gross,
+      prev_op:      DEFAULT_DATA.total.prev_op,
+    },
+    segments, yearly, sga,
+    targets: DEFAULT_DATA.targets,
+  };
+}
+
+// =============================================
+// MODAL / FILE UPLOAD
+// =============================================
+function openModal()  { document.getElementById('modalOverlay').classList.add('open'); }
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+function showStatus(type, msg) {
+  const el = document.getElementById('statusMsg');
+  el.textContent = msg; el.className = `status-msg status-${type}`;
+  setTimeout(() => { el.textContent=''; el.className=''; }, 4000);
+}
+
+function handleFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const wb = XLSX.read(ev.target.result, { type:'array' });
+      const newData = parseXLSX(wb);
+      if (!newData) return;
+      currentData = newData;
+      renderAll(newData);
+      showStatus('success', '✅ データを更新しました！');
+      setTimeout(closeModal, 1500);
+    } catch(err) {
+      console.error(err);
+      showStatus('error', '❌ 読み込みエラー: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// INIT
+renderAll(DEFAULT_DATA);
+</script>
+</body>
+</html>
