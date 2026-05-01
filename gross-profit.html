@@ -941,12 +941,8 @@
       </div>
     </div>
 
-    <!-- Section: Cost Analysis -->
-    <div class="section-header">
-      <span class="section-title" id="sectionCapTitle">原価余力分析　上半期累計</span>
-      <div class="section-line"></div>
-    </div>
-    <div style="margin-bottom:32px;">
+    <!-- Section: Cost Analysis (hidden) -->
+    <div style="display:none;">
       <div class="card" style="padding:0;overflow:hidden;">
         <div class="cost-target-bar">
           <span>目標粗利率</span>
@@ -2000,12 +1996,12 @@ function renderAll(data) {
   setTxt('stackedChartSub',   `単位: 円 ／ ${cumPeriod}合計`);
   setTxt('deptChartTitle',    `部門別 粗利　${cumPeriod}${qtrPeriod}`);
   setTxt('sectionDetailTitle',`部門別 粗利詳細　${cumPeriod}`);
-  setTxt('sectionCapTitle',   `原価余力分析　${cumPeriod}`);
+  // setTxt('sectionCapTitle', ...) — 原価余力分析 セクション非表示中
   renderKPI(data);
   renderInsights(data);
   renderCharts(data);
   renderTable(data);
-  renderCostAnalysis(data);
+  // renderCostAnalysis(data); — 原価余力分析 非表示中
   renderCommission(data);
 }
 
