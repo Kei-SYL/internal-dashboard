@@ -20,6 +20,13 @@
 body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--ink); line-height: 1.6; -webkit-font-smoothing: antialiased; }
 .container { max-width: 1300px; margin: 0 auto; padding: 32px 40px; }
 
+/* TOPNAV */
+.topnav { background: #0f172a; padding: 0 32px; display: flex; align-items: center; gap: 0; position: sticky; top: 0; z-index: 100; }
+.topnav a { display: flex; align-items: center; gap: 6px; padding: 11px 14px; font-size: 12px; font-weight: 500; color: #94a3b8; text-decoration: none; border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; transition: color .15s; }
+.topnav a:hover { color: #e2e8f0; }
+.topnav a.active { color: #fff; border-bottom-color: var(--green); }
+.topnav-sep { color: #1e293b; margin: 0 4px; font-size: 14px; }
+
 /* HEADER */
 .header { border-bottom: 3px solid var(--ink); padding-bottom: 24px; margin-bottom: 40px; position: relative; }
 .header::after { content: ""; position: absolute; bottom: -3px; left: 0; width: 120px; height: 3px; background: var(--green); }
@@ -116,6 +123,18 @@ tbody tr.grand-total td.num { color: #9fe86e; }
 </style>
 </head>
 <body>
+
+<nav class="topnav">
+  <a href="index.html">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    ポータル
+  </a>
+  <span class="topnav-sep">|</span>
+  <a href="hakudo.html">白銅 定例</a>
+  <a href="hakudo-network.html">便別管理</a>
+  <a href="hakudo-billing.html" class="active">請求管理</a>
+</nav>
+
 <div class="container">
 
 <header class="header">
@@ -280,14 +299,25 @@ const BILLING_ROUTES = [
   { cat:'静岡', bin:'809便・静浜ロジ', area:'焼津バラマキ・月曜分', unit:'¥25,000/回', tags:['特便'], billing:[null,null,null,null,null,null,125] },
 ];
 
-// 仕入ルート定義
+// 仕入ルート定義（4月実績・税抜・千円）
+// 東京神奈川: 専用便単価×稼働日数（21日）の仕入
+// ※ 管理費・人件費・混載はSY-Link側コスト（見積書No.261より）
 const COST_ROUTES = [
-  { vendor:'スタンダード運輸 / カーレントサービス', bin:'002/035/045/801/041/042/023便', unit:'¥36,900〜39,900/日', cost:[null,null,null,null,null,null,10000], billing:[null,null,null,null,null,null,10879] },
-  { vendor:'千葉通商（成田）', bin:'千葉幹線+450〜455便', unit:'¥12〜¥24/kg + 固定', cost:[null,null,null,null,null,null,967], billing:[null,null,null,null,null,null,1175] },
-  { vendor:'千葉通商（埼玉東）', bin:'埼玉1・2便（往路）', unit:'¥34,000/日×2便', cost:[null,null,null,null,null,null,1428], billing:[null,null,null,null,null,null,1617] },
-  { vendor:'千葉通商（同車両）', bin:'埼玉2便 復路', unit:'¥24,000/日', cost:[null,null,null,null,null,null,504], billing:[null,null,null,null,null,null,599] },
+  // 東京・神奈川配送 — 業者別仕入
+  { vendor:'スタンダード運輸', bin:'002便・035便・045便・023便', unit:'¥36,900〜39,900/日(専用便)', cost:[null,null,null,null,null,null,5965], billing:[null,null,null,null,null,null,7003] },
+  { vendor:'カーレントサービス', bin:'801便・041便', unit:'¥36,900/日(2t平)×2便', cost:[null,null,null,null,null,null,1550], billing:[null,null,null,null,null,null,3074] },
+  { vendor:'ディーノプロジェクト', bin:'042便', unit:'¥36,900/日(2t平)', cost:[null,null,null,null,null,null,775], billing:[null,null,null,null,null,null,1163] },
+  // 千葉
+  { vendor:'千葉通商（成田・千葉幹線）', bin:'千葉幹線', unit:'¥18,700固定+¥12/kg+最低¥17,000', cost:[null,null,null,null,null,null,381], billing:[null,null,null,null,null,null,496] },
+  { vendor:'千葉通商（450〜455便）', bin:'千葉小口配送', unit:'¥18〜¥21/kg（最低¥350/件）', cost:[null,null,null,null,null,null,533], billing:[null,null,null,null,null,null,679] },
+  // 埼玉幹線
+  { vendor:'千葉通商（埼玉東営業所）', bin:'埼玉1便（往路）', unit:'¥34,000/日', cost:[null,null,null,null,null,null,714], billing:[null,null,null,null,null,null,809] },
+  { vendor:'千葉通商（埼玉東営業所）', bin:'埼玉2便（往路）', unit:'¥34,000/日', cost:[null,null,null,null,null,null,714], billing:[null,null,null,null,null,null,809] },
+  { vendor:'千葉通商（同車両・復路）', bin:'埼玉2便（復路）', unit:'¥24,000/日', cost:[null,null,null,null,null,null,504], billing:[null,null,null,null,null,null,599] },
+  // 福島
   { vendor:'（株）ジャス', bin:'福島幹線', unit:'¥38,000(平)・¥42,000(土)/日', cost:[null,null,null,null,null,null,814], billing:[null,null,null,null,null,null,968] },
-  { vendor:'カーレントサービス', bin:'806便（静岡）', unit:'¥45,000/日+高速実費', cost:[null,null,null,null,null,null,1115], billing:[null,null,null,null,null,null,1144] },
+  // 静岡
+  { vendor:'カーレントサービス（宮本様）', bin:'806便（静岡）', unit:'¥45,000/日+高速¥12,710', cost:[null,null,null,null,null,null,1110], billing:[null,null,null,null,null,null,1144] },
   { vendor:'トレードトラスト / U-NET', bin:'809便・静浜ロジ', unit:'¥25,000/回ほか', cost:[null,null,null,null,null,null,125], billing:[null,null,null,null,null,null,125] },
 ];
 
