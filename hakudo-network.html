@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>白銅ネットワーク便別管理ダッシュボード</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green: #8fc31f;
+  --green-deep: #6fa015;
+  --green-darker: #4d7a0a;
+  --green-50: #f4faea;
+  --green-100: #e7f3d2;
+  --green-200: #d0e7a8;
+  --bg: #fafaf7;
+  --bg-card: #ffffff;
+  --bg-soft: #f4f3ee;
+  --ink: #1a1a17;
+  --ink-soft: #4a4a45;
+  --ink-muted: #8a8a82;
+  --line: #e8e6df;
+  --line-strong: #d4d2ca;
+  --pos: #4d7a0a;
+  --neg: #a84545;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Noto Sans JP', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+  font-feature-settings: "palt";
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 40px;
+}
+
+/* HEADER */
+.header {
+  border-bottom: 3px solid var(--ink);
+  padding-bottom: 24px;
+  margin-bottom: 40px;
+  position: relative;
+}
+.header::after {
+  content: "";
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 120px;
+  height: 3px;
+  background: var(--green);
+}
+.eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  color: var(--green-deep);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+h1 {
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 12px;
+}
+.subtitle {
+  font-size: 13px;
+  color: var(--ink-soft);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-top: 16px;
+}
+.subtitle span { display: flex; align-items: center; gap: 8px; }
+.subtitle span::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: var(--green);
+  border-radius: 50%;
+}
+
+.tax-notice {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  background: var(--ink);
+  color: white;
+  padding: 4px 10px;
+  margin-top: 12px;
+  letter-spacing: 0.05em;
+}
+
+/* KPI */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 48px;
+}
+.kpi {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--green);
+  padding: 20px 24px;
+}
+.kpi.dark { border-left-color: var(--ink); }
+.kpi.deep { border-left-color: var(--green-deep); }
+.kpi.darker { border-left-color: var(--green-darker); }
+.kpi-label { font-size: 11px; font-weight: 500; color: var(--ink-muted); letter-spacing: 0.05em; margin-bottom: 6px; }
+.kpi-value { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; line-height: 1.1; }
+.kpi-unit { font-size: 14px; font-weight: 500; color: var(--ink-muted); margin-left: 4px; }
+.kpi-sub { font-size: 11px; color: var(--ink-muted); margin-top: 6px; }
+
+/* SECTION */
+.section { margin-bottom: 56px; }
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--ink);
+}
+.section-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green-deep);
+  letter-spacing: 0.05em;
+}
+.section-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.section-meta {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+
+/* QUOTE LINK BUTTON */
+.quote-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  background: var(--green-50);
+  border: 1px solid var(--green-200);
+  color: var(--green-darker);
+  font-size: 11px;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.03em;
+  transition: all 0.15s;
+}
+.quote-link:hover {
+  background: var(--green-100);
+  border-color: var(--green-deep);
+}
+.quote-link::before {
+  content: "📄";
+  font-size: 12px;
+}
+.quote-link.inline {
+  font-size: 10px;
+  padding: 2px 7px;
+  margin-left: 8px;
+}
+
+/* FACTORY GRID */
+.factory-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.factory-card {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--green);
+  padding: 18px 20px;
+}
+.factory-card.hub {
+  border-top-color: var(--green-darker);
+  background: linear-gradient(180deg, var(--green-50) 0%, #fff 40%);
+}
+.factory-name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.factory-loc { font-size: 11px; color: var(--ink-muted); margin-bottom: 10px; font-family: 'JetBrains Mono', monospace; }
+.factory-role { font-size: 12px; color: var(--ink-soft); padding-top: 10px; border-top: 1px dashed var(--line-strong); line-height: 1.6; }
+
+/* PAIR GROUP */
+.pair-group {
+  position: relative;
+  margin-bottom: 20px;
+  padding: 20px 20px 16px 28px;
+  background: var(--green-50);
+  border: 1px solid var(--green-200);
+  border-radius: 4px;
+}
+.pair-group::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 20px;
+  bottom: 16px;
+  width: 4px;
+  background: var(--green-deep);
+  border-radius: 2px;
+}
+.pair-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--green-darker);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pair-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--green-200);
+}
+.pair-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.pair-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--green-darker);
+}
+.pair-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.pair-cards.single { grid-template-columns: 1fr; }
+
+.bin-card {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 14px 16px;
+  font-size: 12px;
+}
+.bin-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.bin-card-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.bin-card-tag {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: var(--ink);
+  color: white;
+  letter-spacing: 0.04em;
+}
+.bin-card-tag.return {
+  background: var(--bg-soft);
+  color: var(--ink-soft);
+  border: 1px solid var(--line-strong);
+}
+.bin-route {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.bin-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-muted);
+  margin-bottom: 10px;
+}
+.bin-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+.bin-grid > div {
+  padding: 6px 8px;
+  border-right: 1px solid var(--line);
+}
+.bin-grid > div:last-child { border-right: none; }
+.bin-grid-label { font-size: 10px; color: var(--ink-muted); margin-bottom: 2px; }
+.bin-grid-val { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; }
+.bin-grid-val.pos { color: var(--pos); }
+
+.bin-vendor {
+  background: var(--bg-soft);
+  padding: 6px 10px;
+  margin-top: 8px;
+  font-size: 11px;
+  border-left: 2px solid var(--green);
+}
+.bin-vendor-name { font-weight: 500; color: var(--ink); }
+.bin-vendor-sub { color: var(--ink-muted); font-size: 10px; margin-top: 1px; }
+
+.pair-summary {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: var(--bg-card);
+  border: 1px dashed var(--green-200);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+.pair-summary-label { color: var(--ink-muted); font-size: 11px; }
+.pair-summary-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--green-darker);
+}
+
+/* TABLE */
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  overflow-x: auto;
+}
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead { background: var(--ink); color: white; }
+thead th {
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+thead th.num { text-align: right; }
+tbody td {
+  padding: 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+tbody td.num {
+  font-family: 'JetBrains Mono', monospace;
+  text-align: right;
+  font-weight: 500;
+}
+tbody tr:hover { background: var(--bg-soft); }
+tbody tr:last-child td { border-bottom: none; }
+
+.bin-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--green-deep);
+  white-space: nowrap;
+}
+.bin-name-tbl { font-weight: 700; margin-bottom: 2px; }
+.bin-area-tbl { font-size: 11px; color: var(--ink-muted); line-height: 1.5; }
+.vendor { font-weight: 500; font-size: 12px; }
+.vendor-sub { font-size: 10px; color: var(--ink-muted); margin-top: 2px; }
+.driver { font-size: 12px; color: var(--ink-soft); }
+.driver-tag {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  background: var(--bg-soft);
+  padding: 2px 6px;
+  margin-right: 4px;
+  margin-top: 2px;
+  border: 1px solid var(--line);
+}
+.tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 3px;
+  letter-spacing: 0.03em;
+  background: var(--bg-soft);
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+  margin-top: 4px;
+}
+
+/* QUOTES INDEX */
+.quote-index {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+.quote-index-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+.quote-index-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px 24px;
+}
+.quote-index-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--line);
+  font-size: 12px;
+}
+.quote-index-item:last-child,
+.quote-index-item:nth-last-child(2) { border-bottom: none; }
+.quote-index-name {
+  display: flex;
+  flex-direction: column;
+}
+.quote-index-name strong { font-weight: 700; color: var(--ink); }
+.quote-index-name small { font-size: 10px; color: var(--ink-muted); font-family: 'JetBrains Mono', monospace; }
+
+/* NOTES */
+.notes {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--ink);
+  padding: 18px 22px;
+  margin-top: 16px;
+}
+.notes-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+.notes ul { list-style: none; padding: 0; }
+.notes li {
+  font-size: 12px;
+  padding: 5px 0 5px 18px;
+  position: relative;
+  color: var(--ink-soft);
+  line-height: 1.7;
+}
+.notes li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: var(--green-deep);
+  font-weight: 700;
+}
+
+/* FOOTER */
+.footer {
+  margin-top: 64px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+.footer-source { display: flex; gap: 16px; }
+
+@media (max-width: 1000px) {
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .factory-grid { grid-template-columns: 1fr; }
+  .pair-cards { grid-template-columns: 1fr; }
+  .quote-index-grid { grid-template-columns: 1fr; }
+}
+@media print {
+  body { background: white; }
+  .section, .pair-group { page-break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="header">
+  <div class="eyebrow">SY-LINK × HAKUDO Logistics Operations</div>
+  <h1>白銅ネットワーク便別管理ダッシュボード</h1>
+  <div class="subtitle">
+    <span>2026年4月実績ベース</span>
+    <span>井上引継ぎ + 配送業務ガイドライン2025.7.30</span>
+    <span>各エリア最新見積書反映</span>
+  </div>
+  <div class="tax-notice">ALL PRICES · 税抜表示</div>
+</header>
+
+<!-- KPI -->
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="kpi-label">月次総請求額（税抜・4月）</div>
+    <div class="kpi-value">¥15,334<span class="kpi-unit">千</span></div>
+    <div class="kpi-sub">東京・神奈川・千葉・静岡・福島・埼玉</div>
+  </div>
+  <div class="kpi deep">
+    <div class="kpi-label">主要配送便数</div>
+    <div class="kpi-value">21<span class="kpi-unit">便</span></div>
+    <div class="kpi-sub">幹線3 / 配送13 / 千葉小口5 / 静岡他</div>
+  </div>
+  <div class="kpi darker">
+    <div class="kpi-label">取扱重量（東京・神奈川）</div>
+    <div class="kpi-value">186<span class="kpi-unit">t/月</span></div>
+    <div class="kpi-sub">7主要便合計 ※2026/4実績</div>
+  </div>
+  <div class="kpi dark">
+    <div class="kpi-label">協力運送会社数</div>
+    <div class="kpi-value">12<span class="kpi-unit">社</span></div>
+    <div class="kpi-sub">直送便5 + 千葉通商 + SBS系3 + その他</div>
+  </div>
+</div>
+
+<!-- SECTION 0: QUOTE INDEX -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">00</span>
+    <h2 class="section-title">見積書インデックス</h2>
+    <span class="section-meta">QUOTE INDEX · SharePoint直接アクセス</span>
+  </div>
+
+  <div class="quote-index">
+    <div class="quote-index-title">最新の御見積書（クリックでSharePoint上の原本を開きます）</div>
+    <div class="quote-index-grid">
+
+      <div class="quote-index-item">
+        <div class="quote-index-name">
+          <strong>東京・神奈川便</strong>
+          <small>見積書番号261 · 2025/4/17 発行 · 2025/6改定</small>
+        </div>
+        <a class="quote-link" href="https://sylink.sharepoint.com/sites/head-office/Shared%20Documents/%E9%81%8B%E8%B3%83%E4%BA%A4%E6%B8%89%E7%94%A8%E3%83%87%E3%83%BC%E3%82%BF/%E7%99%BD%E9%8A%85/%E3%80%90202506%EF%BD%9E%E3%80%91SBS%E5%80%A4%E4%B8%8A%E3%81%92/%E5%86%8D%E3%80%90202506%E6%94%B9%E5%AE%9A%E3%80%91%E6%9D%B1%E4%BA%AC%E7%A5%9E%E5%A5%88%E5%B7%9D%E4%BE%BF%E3%81%8A%E8%A6%8B%E7%A9%8D%E3%82%8A.pdf" target="_blank">PDF</a>
+      </div>
+
+      <div class="quote-index-item">
+        <div class="quote-index-name">
+          <strong>福島便</strong>
+          <small>見積書番号253 · 2025/3/18 発行 · 2025/4改定</small>
+        </div>
+        <a class="quote-link" href="https://sylink.sharepoint.com/sites/head-office/Shared%20Documents/%E5%A5%91%E7%B4%84%E6%9B%B8%E9%96%A2%E4%BF%82/%E7%99%BD%E9%8A%85%E6%A0%AA%E5%BC%8F%E4%BC%9A%E7%A4%BE/2025%E5%B9%B44%E6%9C%88%EF%BD%9E/%E3%80%90202504%E6%94%B9%E5%AE%9A%E3%80%91%E7%A6%8F%E5%B3%B6%E5%B9%B9%E7%B7%9A%E4%BE%BF.pdf" target="_blank">PDF</a>
+      </div>
+
+      <div class="quote-index-item">
+        <div class="quote-index-name">
+          <strong>静岡便</strong>
+          <small>見積書番号234 · 2024/10/1 発行</small>
+        </div>
+        <a class="quote-link" href="https://sylink.sharepoint.com/sites/head-office/Shared%20Documents/%E5%A5%91%E7%B4%84%E6%9B%B8%E9%96%A2%E4%BF%82/%E7%99%BD%E9%8A%85%E6%A0%AA%E5%BC%8F%E4%BC%9A%E7%A4%BE/%E5%A5%91%E7%B4%84%E6%9B%B8%E3%83%BB%E8%A6%9A%E6%9B%B8%E3%83%BB%E8%A6%8B%E7%A9%8D%E6%9B%B8/%E8%A6%8B%E7%A9%8D%E6%9B%B8%E3%83%BB%E8%AB%8B%E6%B1%82%E6%9B%B8/%E7%99%BD%E9%8A%85/%E7%99%BD%E9%8A%85%E3%80%80202410.pdf" target="_blank">PDF</a>
+      </div>
+
+      <div class="quote-index-item">
+        <div class="quote-index-name">
+          <strong>埼玉便（幹線）</strong>
+          <small>見積書番号236 · 2024/10/1 発行</small>
+        </div>
+        <a class="quote-link" href="https://sylink.sharepoint.com/sites/head-office/Shared%20Documents/%E5%A5%91%E7%B4%84%E6%9B%B8%E9%96%A2%E4%BF%82/%E7%99%BD%E9%8A%85%E6%A0%AA%E5%BC%8F%E4%BC%9A%E7%A4%BE/%E5%A5%91%E7%B4%84%E6%9B%B8%E3%83%BB%E8%A6%9A%E6%9B%B8%E3%83%BB%E8%A6%8B%E7%A9%8D%E6%9B%B8/%E8%A6%8B%E7%A9%8D%E6%9B%B8%E3%83%BB%E8%AB%8B%E6%B1%82%E6%9B%B8/%E7%99%BD%E9%8A%85/%E7%99%BD%E9%8A%85%E3%80%80202410.pdf" target="_blank">PDF</a>
+      </div>
+
+      <div class="quote-index-item">
+        <div class="quote-index-name">
+          <strong>千葉便</strong>
+          <small>見積書番号237 · 2024/9/9 発行</small>
+        </div>
+        <a class="quote-link" href="https://sylink.sharepoint.com/sites/head-office/Shared%20Documents/%E5%A5%91%E7%B4%84%E6%9B%B8%E9%96%A2%E4%BF%82/%E7%99%BD%E9%8A%85%E6%A0%AA%E5%BC%8F%E4%BC%9A%E7%A4%BE/202408%EF%BD%9E/%E8%A8%82%E6%AD%A3%E7%89%88%E3%80%9020241001%E3%80%91%E3%81%8A%E8%A6%8B%E7%A9%8D%E6%9B%B8.pdf" target="_blank">PDF</a>
+      </div>
+
+      <div class="quote-index-item">
+        <div class="quote-index-name">
+          <strong>千葉452便（追加）</strong>
+          <small>見積書番号275 · 2025/8/18 発行</small>
+        </div>
+        <a class="quote-link" href="https://sylink.sharepoint.com/sites/head-office/Shared%20Documents/%E5%A5%91%E7%B4%84%E6%9B%B8%E9%96%A2%E4%BF%82/%E7%99%BD%E9%8A%85%E6%A0%AA%E5%BC%8F%E4%BC%9A%E7%A4%BE/%E5%8D%83%E8%91%89%EF%BC%94%EF%BC%95%EF%BC%92%E4%BE%BF%E3%81%8A%E8%A6%8B%E7%A9%8D%E3%82%8A/%E3%80%90250822%E3%80%91%E5%8D%83%E8%91%89452%E4%BE%BF%EF%BC%BF%E3%81%8A%E8%A6%8B%E7%A9%8D%E3%82%8A.pdf" target="_blank">PDF</a>
+      </div>
+
+      <div class="quote-index-item">
+        <div class="quote-index-name">
+          <strong>覚書（料金関連）</strong>
+          <small>2024/10/1 締結</small>
+        </div>
+        <a class="quote-link" href="https://sylink.sharepoint.com/sites/head-office/Shared%20Documents/%E5%A5%91%E7%B4%84%E6%9B%B8%E9%96%A2%E4%BF%82/%E7%99%BD%E9%8A%85%E6%A0%AA%E5%BC%8F%E4%BC%9A%E7%A4%BE/202408%EF%BD%9E/%E3%80%9020241001%E3%80%91%E8%A6%9A%E6%9B%B8.docx" target="_blank">DOCX</a>
+      </div>
+
+      <div class="quote-index-item">
+        <div class="quote-index-name">
+          <strong>請求明細書（最新）</strong>
+          <small>2025/9月分 · ご請求書</small>
+        </div>
+        <a class="quote-link" href="https://sylink.sharepoint.com/sites/head-office/Shared%20Documents/%E5%A5%91%E7%B4%84%E6%9B%B8%E9%96%A2%E4%BF%82/%E7%99%BD%E9%8A%85%E6%A0%AA%E5%BC%8F%E4%BC%9A%E7%A4%BE/%E5%A5%91%E7%B4%84%E6%9B%B8%E3%83%BB%E8%A6%9A%E6%9B%B8%E3%83%BB%E8%A6%8B%E7%A9%8D%E6%9B%B8/%E8%A6%8B%E7%A9%8D%E6%9B%B8%E3%83%BB%E8%AB%8B%E6%B1%82%E6%9B%B8/%E7%99%BD%E9%8A%85/%E3%80%90202509%E3%80%91%E3%81%94%E8%AB%8B%E6%B1%82%E6%9B%B8%E3%80%80%E7%A5%9E%E5%A5%88%E5%B7%9D%E5%B7%A5%E5%A0%B4%E6%A7%98.pdf" target="_blank">PDF</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 1: 工場・拠点 -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2 class="section-title">出荷工場・配送ハブ</h2>
+    <span class="section-meta">FACILITY MAP</span>
+  </div>
+
+  <div class="factory-grid">
+    <div class="factory-card hub">
+      <div class="factory-name">神奈川工場</div>
+      <div class="factory-loc">厚木市戸田2514</div>
+      <div class="factory-role">配送ハブ機能。高橋さん駐在。675便（東京）・677便（神奈川）の積替もここで実施。</div>
+    </div>
+    <div class="factory-card">
+      <div class="factory-name">埼玉第二工場（熊谷）</div>
+      <div class="factory-loc">熊谷市樋春1223-3</div>
+      <div class="factory-role">2026年1月稼働。1便：神奈川→葛西、2便：神奈川往復（復路：空コン・返品）。千葉通商4t×2。</div>
+    </div>
+    <div class="factory-card">
+      <div class="factory-name">福島工場</div>
+      <div class="factory-loc">郡山近郊</div>
+      <div class="factory-role">銅製品中心。福島→神奈川 22時発・翌早朝着。運行：（株）ジャス。</div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 2: 幹線便 -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h2 class="section-title">幹線便（工場間長距離輸送）</h2>
+    <span class="section-meta">TRUNK LINE · 千葉通商運行</span>
+  </div>
+
+  <!-- PAIR 01 -->
+  <div class="pair-group">
+    <div class="pair-label">PAIR · 01</div>
+    <div class="pair-title-row">
+      <span class="pair-title">埼玉1便 → 千葉幹線（葛西経由で千葉エリアへ展開）</span>
+      <a class="quote-link inline" href="https://sylink.sharepoint.com/sites/head-office/Shared%20Documents/%E5%A5%91%E7%B4%84%E6%9B%B8%E9%96%A2%E4%BF%82/%E7%99%BD%E9%8A%85%E6%A0%AA%E5%BC%8F%E4%BC%9A%E7%A4%BE/%E5%A5%91%E7%B4%84%E6%9B%B8%E3%83%BB%E8%A6%9A%E6%9B%B8%E3%83%BB%E8%A6%8B%E7%A9%8D%E6%9B%B8/%E8%A6%8B%E7%A9%8D%E6%9B%B8%E3%83%BB%E8%AB%8B%E6%B1%82%E6%9B%B8/%E7%99%BD%E9%8A%85/%E7%99%BD%E9%8A%85%E3%80%80202410.pdf" target="_blank">埼玉便見積書 No.236</a>
+    </div>
+
+    <div class="pair-cards">
+      <div class="bin-card">
+        <div class="bin-card-head">
+          <span class="bin-card-name">埼玉1便</span>
+          <span class="bin-card-tag">幹線・往路</span>
+        </div>
+        <div class="bin-route">熊谷（加須）→ 神奈川（厚木）</div>
+        <div class="bin-time">20:00〜20:30 出発 / 月〜金 / 4tウィング</div>
+        <div class="bin-grid">
+          <div>
+            <div class="bin-grid-label">請求</div>
+            <div class="bin-grid-val">¥38,500</div>
+          </div>
+          <div>
+            <div class="bin-grid-label">仕入</div>
+            <div class="bin-grid-val">¥34,000</div>
+          </div>
+          <div>
+            <div class="bin-grid-label">粗利/日</div>
+            <div class="bin-grid-val pos">+¥4,500</div>
+          </div>
+        </div>
+        <div class="bin-vendor">
+          <div class="bin-vendor-name">千葉通商（埼玉東営業所）</div>
+          <div class="bin-vendor-sub">TEL 048-940-3701</div>
+        </div>
+      </div>
+
+      <div class="bin-card">
+        <div class="bin-card-head">
+          <span class="bin-card-name">千葉幹線</span>
+          <span class="bin-card-tag">幹線・接続</span>
+        </div>
+        <div class="bin-route">神奈川（厚木）→ 葛西 → 千葉小口デポ展開</div>
+        <div class="bin-time">深夜1〜2時発 / 月〜金</div>
+
+        <div style="margin-top:8px; padding:8px 10px; background:var(--bg-soft); border-left:2px solid var(--green-200); font-size:11px;">
+          <div style="font-weight:700; color:var(--ink-soft); margin-bottom:6px; font-size:10px; letter-spacing:0.05em;">3区間の単価構造</div>
+
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; padding:5px 0; border-bottom:1px dashed var(--line);">
+            <div>
+              <div style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:500;">厚木→千葉（固定1便）</div>
+              <div style="color:var(--ink-muted); font-size:10px;">千葉通docx</div>
+            </div>
+            <div style="text-align:right; font-family:'JetBrains Mono',monospace; font-size:11px;">
+              <div>請求¥22,000 / 仕入¥18,700</div>
+              <div style="color:var(--pos); font-weight:700;">+¥3,300</div>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; padding:5px 0; border-bottom:1px dashed var(--line);">
+            <div>
+              <div style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:500;">混載タリフ（kg単価）</div>
+              <div style="color:var(--ink-muted); font-size:10px;">千葉便見積書 No.237</div>
+            </div>
+            <div style="text-align:right; font-family:'JetBrains Mono',monospace; font-size:11px;">
+              <div>請求¥15/kg / 仕入¥12/kg</div>
+              <div style="color:var(--pos); font-weight:700;">+¥3/kg</div>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; padding:5px 0;">
+            <div>
+              <div style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:500;">幹線最低運賃</div>
+              <div style="color:var(--ink-muted); font-size:10px;">千葉便見積書 No.237</div>
+            </div>
+            <div style="text-align:right; font-family:'JetBrains Mono',monospace; font-size:11px;">
+              <div>請求¥20,000 / 仕入¥17,000</div>
+              <div style="color:var(--pos); font-weight:700;">+¥3,000</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bin-vendor">
+          <div class="bin-vendor-name">千葉通商（成田営業所）</div>
+          <div class="bin-vendor-sub">運用実態に応じて単価系統が切り替わる</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pair-summary">
+      <span class="pair-summary-label">ペア合計（4月実績・税抜）</span>
+      <span class="pair-summary-val">埼玉1便 ¥808,500 + 千葉幹線 ¥496,301 = ¥1,304,801</span>
+    </div>
+  </div>
+
+  <!-- PAIR 02 -->
+  <div class="pair-group">
+    <div class="pair-label">PAIR · 02</div>
+    <div class="pair-title-row">
+      <span class="pair-title">埼玉2便 往復セット（神奈川工場との空コン・返品物循環）</span>
+      <a class="quote-link inline" href="https://sylink.sharepoint.com/sites/head-office/Shared%20Documents/%E5%A5%91%E7%B4%84%E6%9B%B8%E9%96%A2%E4%BF%82/%E7%99%BD%E9%8A%85%E6%A0%AA%E5%BC%8F%E4%BC%9A%E7%A4%BE/%E5%A5%91%E7%B4%84%E6%9B%B8%E3%83%BB%E8%A6%9A%E6%9B%B8%E3%83%BB%E8%A6%8B%E7%A9%8D%E6%9B%B8/%E8%A6%8B%E7%A9%8D%E6%9B%B8%E3%83%BB%E8%AB%8B%E6%B1%82%E6%9B%B8/%E7%99%BD%E9%8A%85/%E7%99%BD%E9%8A%85%E3%80%80202410.pdf" target="_blank">埼玉便見積書 No.236</a>
+    </div>
+
+    <div class="pair-cards">
+      <div class="bin-card">
+        <div class="bin-card-head">
+          <span class="bin-card-name">埼玉2便</span>
+          <span class="bin-card-tag">幹線・往路</span>
+        </div>
+        <div class="bin-route">熊谷（加須）→ 神奈川（厚木）</div>
+        <div class="bin-time">21:00〜21:30 出発 / 月〜金 / 4tウィング</div>
+        <div class="bin-grid">
+          <div>
+            <div class="bin-grid-label">請求</div>
+            <div class="bin-grid-val">¥38,500</div>
+          </div>
+          <div>
+            <div class="bin-grid-label">仕入</div>
+            <div class="bin-grid-val">¥34,000</div>
+          </div>
+          <div>
+            <div class="bin-grid-label">粗利/日</div>
+            <div class="bin-grid-val pos">+¥4,500</div>
+          </div>
+        </div>
+        <div class="bin-vendor">
+          <div class="bin-vendor-name">千葉通商（埼玉東営業所）</div>
+          <div class="bin-vendor-sub">同左</div>
+        </div>
+      </div>
+
+      <div class="bin-card">
+        <div class="bin-card-head">
+          <span class="bin-card-name">埼玉2便 復路</span>
+          <span class="bin-card-tag return">幹線・復路</span>
+        </div>
+        <div class="bin-route">神奈川（厚木）→ 熊谷（加須）</div>
+        <div class="bin-time">空コンテナ・返品物回収 / 月〜金</div>
+        <div class="bin-grid">
+          <div>
+            <div class="bin-grid-label">請求</div>
+            <div class="bin-grid-val">¥28,500</div>
+          </div>
+          <div>
+            <div class="bin-grid-label">仕入</div>
+            <div class="bin-grid-val">¥24,000</div>
+          </div>
+          <div>
+            <div class="bin-grid-label">粗利/日</div>
+            <div class="bin-grid-val pos">+¥4,500</div>
+          </div>
+        </div>
+        <div class="bin-vendor">
+          <div class="bin-vendor-name">千葉通商（同車両）</div>
+          <div class="bin-vendor-sub">復路は積載少なめ・単価減</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pair-summary">
+      <span class="pair-summary-label">ペア合計（4月実績・税抜）</span>
+      <span class="pair-summary-val">埼玉2便 ¥808,500 + 復路 ¥598,500 = ¥1,407,000</span>
+    </div>
+  </div>
+
+  <!-- SOLO 03 -->
+  <div class="pair-group">
+    <div class="pair-label">SOLO · 03</div>
+    <div class="pair-title-row">
+      <span class="pair-title">福島幹線（往路のみ・運行会社：ジャス）</span>
+      <a class="quote-link inline" href="https://sylink.sharepoint.com/sites/head-office/Shared%20Documents/%E5%A5%91%E7%B4%84%E6%9B%B8%E9%96%A2%E4%BF%82/%E7%99%BD%E9%8A%85%E6%A0%AA%E5%BC%8F%E4%BC%9A%E7%A4%BE/2025%E5%B9%B44%E6%9C%88%EF%BD%9E/%E3%80%90202504%E6%94%B9%E5%AE%9A%E3%80%91%E7%A6%8F%E5%B3%B6%E5%B9%B9%E7%B7%9A%E4%BE%BF.pdf" target="_blank">福島便見積書 No.253</a>
+    </div>
+
+    <div class="pair-cards single">
+      <div class="bin-card">
+        <div class="bin-card-head">
+          <span class="bin-card-name">福島幹線</span>
+          <span class="bin-card-tag">幹線・単独</span>
+        </div>
+        <div class="bin-route">福島 → 神奈川</div>
+        <div class="bin-time">22:00発 / 翌早朝着 / 13.7t / 平日17回・土4回（4月）</div>
+        <div class="bin-grid">
+          <div>
+            <div class="bin-grid-label">請求 月〜木 / 土・祝</div>
+            <div class="bin-grid-val">¥44,000 / ¥55,000</div>
+          </div>
+          <div>
+            <div class="bin-grid-label">仕入 平日 / 土</div>
+            <div class="bin-grid-val">¥38,000 / ¥42,000</div>
+          </div>
+          <div>
+            <div class="bin-grid-label">粗利/日</div>
+            <div class="bin-grid-val pos">+¥6,000 / +¥13,000</div>
+          </div>
+        </div>
+        <div class="bin-vendor">
+          <div class="bin-vendor-name">（株）ジャス</div>
+          <div class="bin-vendor-sub">柳沼様 080-3325-7431 / 高速別途¥6,560 / 4月実績 ¥968,000</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <div class="notes-title">幹線便の運用メモ</div>
+    <ul>
+      <li>埼玉1便は葛西（江戸川区）の中継ターミナルで千葉便の仕分けを実施。葛西発で450〜455便に展開される。</li>
+      <li>埼玉2便の復路は空コン・返品物回収のため積載少なめ。単価が下がる構造。</li>
+      <li>千葉幹線は3つの単価系統が併存：①固定1便単価（厚木→千葉 ¥22,000/¥18,700）②混載kg単価（¥15/¥12）③最低運賃（¥20,000/¥17,000）。荷量に応じて適用が切り替わる。</li>
+      <li>福島便は2025/4改定で値上げ（¥40,000→¥44,000、土¥50,000→¥55,000）。粗利も拡大。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- SECTION 3: 神奈川配送便 -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h2 class="section-title">神奈川配送便</h2>
+    <span class="section-meta">KANAGAWA · 002 / 035 / 045</span>
+    <a class="quote-link inline" href="https://sylink.sharepoint.com/sites/head-office/Shared%20Documents/%E9%81%8B%E8%B3%83%E4%BA%A4%E6%B8%89%E7%94%A8%E3%83%87%E3%83%BC%E3%82%BF/%E7%99%BD%E9%8A%85/%E3%80%90202506%EF%BD%9E%E3%80%91SBS%E5%80%A4%E4%B8%8A%E3%81%92/%E5%86%8D%E3%80%90202506%E6%94%B9%E5%AE%9A%E3%80%91%E6%9D%B1%E4%BA%AC%E7%A5%9E%E5%A5%88%E5%B7%9D%E4%BE%BF%E3%81%8A%E8%A6%8B%E7%A9%8D%E3%82%8A.pdf" target="_blank">東京神奈川便見積書 No.261</a>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>便名</th>
+          <th>配送エリア</th>
+          <th>業者 / ドライバー</th>
+          <th class="num">専用便単価/日</th>
+          <th class="num">月間重量</th>
+          <th class="num">㎏単価</th>
+          <th class="num">月間請求額</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="bin-code">002便</div>
+            <span class="tag">配送</span>
+          </td>
+          <td>
+            <div class="bin-name-tbl">EXP02-01：横浜・綾瀬・大和・座間・海老名</div>
+            <div class="bin-area-tbl">EXP02-02：藤沢・横須賀・寒川・金沢　／　SBS02便：横浜・川崎・町田</div>
+          </td>
+          <td>
+            <div class="vendor">スタンダード運輸（4台）</div>
+            <div class="driver">
+              <span class="driver-tag">高田淳一</span>横浜
+              <span class="driver-tag">藤田一男</span>横須賀
+            </div>
+            <div class="vendor-sub" style="margin-top:4px">+ イマディア / SBS神奈川</div>
+          </td>
+          <td class="num">¥39,900<br><span style="font-size:10px;color:var(--ink-muted)">横浜3t</span><br>¥36,900<br><span style="font-size:10px;color:var(--ink-muted)">横須賀2t</span></td>
+          <td class="num">36,330 kg</td>
+          <td class="num">¥61</td>
+          <td class="num">¥2,210,891</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="bin-code">035便</div>
+            <span class="tag">配送</span>
+          </td>
+          <td>
+            <div class="bin-name-tbl">EXP35-01：相模原・小田原・愛川町・厚木・伊勢原・平塚</div>
+            <div class="bin-area-tbl">EXP35-02：日軽秦野（軽車両）／伊勢原・厚木・小田原</div>
+          </td>
+          <td>
+            <div class="vendor">スタンダード + 日軽秦野</div>
+            <div class="driver">
+              <span class="driver-tag">金親隆之</span>35便
+            </div>
+          </td>
+          <td class="num">¥39,900<br><span style="font-size:10px;color:var(--ink-muted)">相模原3t</span><br>¥20,000<br><span style="font-size:10px;color:var(--ink-muted)">小田原軽</span></td>
+          <td class="num">35,774 kg</td>
+          <td class="num">¥61</td>
+          <td class="num">¥2,177,067</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="bin-code">045便</div>
+            <span class="tag">配送</span>
+          </td>
+          <td>
+            <div class="bin-name-tbl">横浜・川崎・町田</div>
+            <div class="bin-area-tbl">SBS神奈川（町田）持込便。23便のSBS町田分は45便が運ぶ</div>
+          </td>
+          <td>
+            <div class="vendor">スタンダード運輸</div>
+            <div class="driver">
+              <span class="driver-tag">梶山宏</span>45便
+            </div>
+            <div class="vendor-sub" style="margin-top:4px">+ SBS即配 神奈川支店</div>
+          </td>
+          <td class="num">¥39,900<br><span style="font-size:10px;color:var(--ink-muted)">3t平</span></td>
+          <td class="num">26,710 kg</td>
+          <td class="num">¥61</td>
+          <td class="num">¥1,625,470</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="notes">
+    <div class="notes-title">神奈川配送便の運用メモ</div>
+    <ul>
+      <li>035便の小田原行きはスタンダードだと労働時間が長くなるため、日軽秦野（軽車両）に積みたい — 井上さん引継ぎ事項。</li>
+      <li>045便は SBS神奈川（町田）への持込便。23便のSBS町田分も45便が代行。</li>
+      <li>2025/2検証時：45便・02便横浜・23便で予定到着時刻との誤差1時間以上が50%超で改善対象。</li>
+      <li>イマディア：1台1件¥1,800（1日18件平均）、返品 ¥500/件。</li>
+      <li>2025/6改定で混載便単価¥650→¥685に値上げ。2025/10にさらに¥685→¥713予定。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- SECTION 4: 東京配送便 -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <h2 class="section-title">東京配送便</h2>
+    <span class="section-meta">TOKYO · 041 / 042 / 801 / 023</span>
+    <a class="quote-link inline" href="https://sylink.sharepoint.com/sites/head-office/Shared%20Documents/%E9%81%8B%E8%B3%83%E4%BA%A4%E6%B8%89%E7%94%A8%E3%83%87%E3%83%BC%E3%82%BF/%E7%99%BD%E9%8A%85/%E3%80%90202506%EF%BD%9E%E3%80%91SBS%E5%80%A4%E4%B8%8A%E3%81%92/%E5%86%8D%E3%80%90202506%E6%94%B9%E5%AE%9A%E3%80%91%E6%9D%B1%E4%BA%AC%E7%A5%9E%E5%A5%88%E5%B7%9D%E4%BE%BF%E3%81%8A%E8%A6%8B%E7%A9%8D%E3%82%8A.pdf" target="_blank">東京神奈川便見積書 No.261</a>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>便名</th>
+          <th>配送エリア</th>
+          <th>業者 / ドライバー</th>
+          <th class="num">専用便単価/日</th>
+          <th class="num">月間重量</th>
+          <th class="num">㎏単価</th>
+          <th class="num">月間請求額</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="bin-code">801便</div>
+            <span class="tag">配送</span>
+          </td>
+          <td>
+            <div class="bin-name-tbl">大田区</div>
+            <div class="bin-area-tbl">SBS東京③（平和島）への持込便も含む</div>
+          </td>
+          <td>
+            <div class="vendor">カーレントサービス</div>
+            <div class="vendor-sub">伊勢原市粟窪1002-1</div>
+          </td>
+          <td class="num">¥36,900<br><span style="font-size:10px;color:var(--ink-muted)">2t平</span></td>
+          <td class="num">36,735 kg</td>
+          <td class="num">¥61</td>
+          <td class="num">¥2,235,570</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="bin-code">041便</div>
+            <span class="tag">配送</span>
+          </td>
+          <td>
+            <div class="bin-name-tbl">墨田・江東・江戸川・葛飾・中央・千代田・新宿</div>
+            <div class="bin-area-tbl">SBS東京①（本店）への持込便対応</div>
+          </td>
+          <td>
+            <div class="vendor">カーレントサービス</div>
+            <div class="driver">
+              <span class="driver-tag">桟</span>SBS（江東）+15件
+            </div>
+            <div class="vendor-sub" style="margin-top:4px">2023年8月にディーノから移管</div>
+          </td>
+          <td class="num">¥36,900<br><span style="font-size:10px;color:var(--ink-muted)">2t平</span></td>
+          <td class="num">13,770 kg</td>
+          <td class="num">¥61</td>
+          <td class="num">¥838,027</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="bin-code">042便</div>
+            <span class="tag">配送</span>
+          </td>
+          <td>
+            <div class="bin-name-tbl">足立・練馬・板橋・北・新宿・荒川・台東</div>
+            <div class="bin-area-tbl">SBS城北（北区）への持込便。アバンティが新砂・新木場まで配達</div>
+          </td>
+          <td>
+            <div class="vendor">ディーノプロジェクト</div>
+            <div class="driver">
+              <span class="driver-tag">谷内</span>SBS城北+15件
+              <span class="driver-tag">斎藤</span>21件
+            </div>
+            <div class="vendor-sub" style="margin-top:4px">厚木市戸田2242-11</div>
+          </td>
+          <td class="num">¥36,900<br><span style="font-size:10px;color:var(--ink-muted)">2t平</span></td>
+          <td class="num">19,114 kg</td>
+          <td class="num">¥44</td>
+          <td class="num">¥1,163,234</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="bin-code">023便</div>
+            <span class="tag">配送</span>
+          </td>
+          <td>
+            <div class="bin-name-tbl">八王子・町田・東京都23区外</div>
+            <div class="bin-area-tbl">SBS東京多摩（世田谷・杉並・23区外）への持込</div>
+          </td>
+          <td>
+            <div class="vendor">スタンダード運輸</div>
+            <div class="driver">
+              <span class="driver-tag">谷山恵</span>23便
+            </div>
+            <div class="vendor-sub" style="margin-top:4px">SBS23便は当日配達難しい</div>
+          </td>
+          <td class="num">¥36,900<br><span style="font-size:10px;color:var(--ink-muted)">2t平</span></td>
+          <td class="num">17,292 kg</td>
+          <td class="num">¥48</td>
+          <td class="num">¥828,645</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="notes">
+    <div class="notes-title">東京・神奈川便の見積書構造（No.261・2025/6改定）</div>
+    <ul>
+      <li>専用便（3t車）¥39,900 × 3台：002①横浜・35①相模原・45　／　専用便（2t車）¥36,900 × 5台：002②横須賀・23・35②（軽除く）の代替・41・42・801</li>
+      <li>専用便（軽）¥20,000 × 1台：35②小田原（日軽秦野）　／　チャーター（2t）¥30,000・チャーター（軽）¥20,000 各0.85台</li>
+      <li>人件費（仕分3名+配車1名）¥32,200/日　／　マネジメントフィー¥35,640（専用便+人件費の10%）</li>
+      <li>混載便 ¥685/件 × 144件 = ¥98,640/日（2025/6改定）</li>
+      <li>合計税抜¥533,180/日 × 月間 ≒ 月間総額（重量320t未満時、802便除く）</li>
+    </ul>
+  </div>
+</section>
+
+<!-- SECTION 5: 千葉小口デポ -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <h2 class="section-title">千葉小口デポ便</h2>
+    <span class="section-meta">CHIBA DEPOT · 450〜455</span>
+    <a class="quote-link inline" href="https://sylink.sharepoint.com/sites/head-office/Shared%20Documents/%E5%A5%91%E7%B4%84%E6%9B%B8%E9%96%A2%E4%BF%82/%E7%99%BD%E9%8A%85%E6%A0%AA%E5%BC%8F%E4%BC%9A%E7%A4%BE/202408%EF%BD%9E/%E8%A8%82%E6%AD%A3%E7%89%88%E3%80%9020241001%E3%80%91%E3%81%8A%E8%A6%8B%E7%A9%8D%E6%9B%B8.pdf" target="_blank">千葉便見積書 No.237</a>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>便名</th>
+          <th>配送エリア</th>
+          <th>業者</th>
+          <th class="num">月間重量</th>
+          <th class="num">㎏単価</th>
+          <th class="num">月間請求額</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="bin-code">450便</div><span class="tag">配送</span></td>
+          <td><div class="bin-name-tbl">成田市・印西市</div></td>
+          <td><div class="vendor">千葉通商</div><div class="vendor-sub">成田営業所</div></td>
+          <td class="num">853.7 kg</td>
+          <td class="num">¥24</td>
+          <td class="num">¥20,662</td>
+        </tr>
+        <tr>
+          <td><div class="bin-code">451便</div><span class="tag">配送</span></td>
+          <td><div class="bin-name-tbl">千葉市・船橋市・浦安市・市川</div></td>
+          <td><div class="vendor">千葉通商</div></td>
+          <td class="num">7,871 kg</td>
+          <td class="num">¥24</td>
+          <td class="num">¥185,072</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="bin-code">452便</div>
+            <span class="tag">配送</span>
+            <a class="quote-link inline" style="margin-top:4px" href="https://sylink.sharepoint.com/sites/head-office/Shared%20Documents/%E5%A5%91%E7%B4%84%E6%9B%B8%E9%96%A2%E4%BF%82/%E7%99%BD%E9%8A%85%E6%A0%AA%E5%BC%8F%E4%BC%9A%E7%A4%BE/%E5%8D%83%E8%91%89%EF%BC%94%EF%BC%95%EF%BC%92%E4%BE%BF%E3%81%8A%E8%A6%8B%E7%A9%8D%E3%82%8A/%E3%80%90250822%E3%80%91%E5%8D%83%E8%91%89452%E4%BE%BF%EF%BC%BF%E3%81%8A%E8%A6%8B%E7%A9%8D%E3%82%8A.pdf" target="_blank">追加見積 No.275</a>
+          </td>
+          <td><div class="bin-name-tbl">柏市・野田市・松戸市</div></td>
+          <td><div class="vendor">千葉通商</div><div class="vendor-sub">2t平車専用便 ¥37,000/日 + MF¥3,700</div></td>
+          <td class="num">12,042 kg</td>
+          <td class="num">¥22</td>
+          <td class="num">¥260,132</td>
+        </tr>
+        <tr>
+          <td><div class="bin-code">453便</div><span class="tag">配送</span></td>
+          <td><div class="bin-name-tbl">香取市・旭市・小見川</div></td>
+          <td><div class="vendor">千葉通商</div></td>
+          <td class="num">1,541 kg</td>
+          <td class="num">¥22</td>
+          <td class="num">¥33,924</td>
+        </tr>
+        <tr>
+          <td><div class="bin-code">454便</div><span class="tag">配送</span></td>
+          <td><div class="bin-name-tbl">君津市・木更津市</div></td>
+          <td><div class="vendor">千葉通商</div></td>
+          <td class="num">1,584 kg</td>
+          <td class="num">¥29</td>
+          <td class="num">¥45,378</td>
+        </tr>
+        <tr>
+          <td><div class="bin-code">455便</div><span class="tag">配送</span></td>
+          <td><div class="bin-name-tbl">東金市・茂原市</div></td>
+          <td><div class="vendor">千葉通商</div></td>
+          <td class="num">6,222 kg</td>
+          <td class="num">¥21</td>
+          <td class="num">¥133,384</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="notes">
+    <div class="notes-title">千葉便のタリフ構造（見積書 No.237）</div>
+    <ul>
+      <li>県内配送：18円/kg（最低350円/件）　／　幹線：15円/kg（最低20,000円/日）</li>
+      <li>配送方法：他社様商品との共同配送（共配便：2t箱車・幹線便：4tウィング車）</li>
+      <li>4月実績：千葉便総請求 ¥1,174,853（税抜）+ 高速 ¥0</li>
+      <li>葛西中継ターミナルで仕分後、千葉通商の450〜455便で各エリアへ展開</li>
+      <li>452便は追加見積で2t平専用便扱い（¥37,000+MF¥3,700/日）</li>
+    </ul>
+  </div>
+</section>
+
+<!-- SECTION 6: 静岡 -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <h2 class="section-title">静岡便・その他</h2>
+    <span class="section-meta">SHIZUOKA · 805〜809 / 861〜864</span>
+    <a class="quote-link inline" href="https://sylink.sharepoint.com/sites/head-office/Shared%20Documents/%E5%A5%91%E7%B4%84%E6%9B%B8%E9%96%A2%E4%BF%82/%E7%99%BD%E9%8A%85%E6%A0%AA%E5%BC%8F%E4%BC%9A%E7%A4%BE/%E5%A5%91%E7%B4%84%E6%9B%B8%E3%83%BB%E8%A6%9A%E6%9B%B8%E3%83%BB%E8%A6%8B%E7%A9%8D%E6%9B%B8/%E8%A6%8B%E7%A9%8D%E6%9B%B8%E3%83%BB%E8%AB%8B%E6%B1%82%E6%9B%B8/%E7%99%BD%E9%8A%85/%E7%99%BD%E9%8A%85%E3%80%80202410.pdf" target="_blank">静岡便見積書 No.234</a>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>便名</th>
+          <th>配送エリア</th>
+          <th>業者 / 拠点</th>
+          <th>運行</th>
+          <th class="num">請求/日</th>
+          <th class="num">仕入/日</th>
+          <th class="num">月間請求額</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="bin-code">806便</div>
+            <span class="tag">配送</span>
+          </td>
+          <td>
+            <div class="bin-name-tbl">浜松市・掛川市・磐田市</div>
+            <div class="bin-area-tbl">月21回稼働（2026年4月） / スチポリ沼津・焼津2点降ろし + 焼津5件バラマキ</div>
+          </td>
+          <td>
+            <div class="vendor">カーレントサービス</div>
+            <div class="vendor-sub">宮本様 090-6447-0531</div>
+          </td>
+          <td>4t 火〜金</td>
+          <td class="num">¥48,500<br><span style="font-size:10px;color:var(--ink-muted)">+高速¥8,540</span></td>
+          <td class="num">¥45,000<br><span style="font-size:10px;color:var(--ink-muted)">+高速¥12,710</span></td>
+          <td class="num">¥976,500</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="bin-code">809便</div>
+            <span class="tag">バラマキ</span>
+          </td>
+          <td>
+            <div class="bin-name-tbl">焼津バラマキ便</div>
+            <div class="bin-area-tbl">月5回（2026年4月）</div>
+          </td>
+          <td>
+            <div class="vendor">トレードトラスト</div>
+            <div class="vendor-sub">焼津シェアロジセンター</div>
+          </td>
+          <td>土AM持込</td>
+          <td class="num">¥25,000</td>
+          <td class="num"><span style="color:var(--ink-muted)">—</span></td>
+          <td class="num">¥125,000</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="bin-code">静浜ロジ経由</div>
+            <span class="tag">月曜分</span>
+          </td>
+          <td>
+            <div class="bin-name-tbl">焼津エリア（月曜配達分）</div>
+            <div class="bin-area-tbl">土曜AMにロジネットへ事前持込→月曜AM配達</div>
+          </td>
+          <td>
+            <div class="vendor">U-NET</div>
+            <div class="vendor-sub">TEL 046-784-9833</div>
+          </td>
+          <td>軽便扱い</td>
+          <td class="num"><span style="color:var(--ink-muted)">月単位</span></td>
+          <td class="num"><span style="color:var(--ink-muted)">—</span></td>
+          <td class="num"><span style="color:var(--ink-muted)">—</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="notes">
+    <div class="notes-title">静岡便の特殊運用（見積書 No.234）</div>
+    <ul>
+      <li>請求¥48,500/日 + 高速¥8,540（実費）　／　仕入¥45,000/日 + 高速¥12,710　粗利は構造上低い（高速差で実質マイナスもあり）</li>
+      <li>2026年4月実績：静岡便 総請求 ¥1,101,500（税抜）+ 高速 ¥166,982</li>
+      <li>月曜配送分は前持込：土曜朝に焼津のロジネットへ届けて、月曜AM配達。スチールポリッシュ（スチポリ）取引先向け。</li>
+      <li>業者連絡：カーレント宮本様 / トレードトラスト焼津 054-349-3366 / 浜松シェアロジ 053-425-2340</li>
+    </ul>
+  </div>
+</section>
+
+<!-- SECTION 7: 別便チャーター -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <h2 class="section-title">別便チャーター・特便</h2>
+    <span class="section-meta">CHARTER · 単価表（2023.8改定）</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>エリア</th>
+          <th>車両</th>
+          <th class="num">改定前（〜2023.7）</th>
+          <th class="num">改定後（2023.8〜）</th>
+          <th class="num">他社S社参考</th>
+          <th class="num">他社I社参考</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="bin-name-tbl">東京23区</div></td>
+          <td>4t</td>
+          <td class="num">¥31,000</td>
+          <td class="num"><strong>¥30,000</strong></td>
+          <td class="num">—</td>
+          <td class="num">不可</td>
+        </tr>
+        <tr>
+          <td><div class="bin-name-tbl">東京23区</div></td>
+          <td>2t</td>
+          <td class="num">¥28,000</td>
+          <td class="num"><strong>¥27,000</strong></td>
+          <td class="num">¥29,000</td>
+          <td class="num">—</td>
+        </tr>
+        <tr>
+          <td><div class="bin-name-tbl">東京23区</div></td>
+          <td>軽</td>
+          <td class="num">¥16,000</td>
+          <td class="num"><strong>¥15,000</strong></td>
+          <td class="num">—</td>
+          <td class="num">—</td>
+        </tr>
+        <tr>
+          <td><div class="bin-name-tbl">神奈川</div></td>
+          <td>4t</td>
+          <td class="num">¥30,000</td>
+          <td class="num"><strong>¥29,000</strong></td>
+          <td class="num">—</td>
+          <td class="num">不可</td>
+        </tr>
+        <tr>
+          <td><div class="bin-name-tbl">神奈川</div></td>
+          <td>2t</td>
+          <td class="num">¥27,000</td>
+          <td class="num"><strong>¥26,000</strong></td>
+          <td class="num">¥28,000</td>
+          <td class="num">—</td>
+        </tr>
+        <tr>
+          <td><div class="bin-name-tbl">神奈川</div></td>
+          <td>軽</td>
+          <td class="num">¥15,000</td>
+          <td class="num"><strong>¥14,000</strong></td>
+          <td class="num">—</td>
+          <td class="num">—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="notes">
+    <div class="notes-title">別便利用ルール</div>
+    <ul>
+      <li>使用条件：①白銅様からの指示　②出発時間に間に合わないとき　③配達件数オーバー（件数・重量・サイズ）</li>
+      <li>手配は出荷当日の午前中（例：午前4時発注）。仕入により価格変動あり</li>
+      <li>神奈川エリアは特便依頼のみ請求対象（通常は混載で対応）</li>
+      <li>2023年8月単価改定で1台あたり▲¥1,000のコスト還元（白銅様向け）</li>
+      <li>東京・神奈川便見積書 No.261では2t車¥30,000、軽¥20,000で記載 - 上記表とは別の集計基準</li>
+    </ul>
+  </div>
+</section>
+
+<footer class="footer">
+  <div>SY-LINK Internal Dashboard / Hakudo Operations</div>
+  <div class="footer-source">
+    <span>data: 2026年4月請求実績（税抜）</span>
+    <span>compiled: 2026.05.08</span>
+  </div>
+</footer>
+
+</div>
+</body>
+</html>
